@@ -18,6 +18,7 @@ router.post("/team/:password", teamController.loginTeam);
 router.get("/team/:id", teamController.getTeamById);
 router.post("/team/score/:id", teamController.updateScore2);
 router.post("/team/score1/:id", teamController.updateScore1);
+router.post('/Hack/team/:teamId/number-puzzle-score', teamController.submitNumberPuzzleScore);
 
 // --- Update Routes ---
 router.post("/pro/:id", teamController.updateProblemId);

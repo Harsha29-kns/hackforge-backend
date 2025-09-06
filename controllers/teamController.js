@@ -214,6 +214,35 @@ exports.verifyTeam = async (req, res) => {
     }
 };
 
+exports.submitNumberPuzzleScore = async (req, res) => {
+    try {
+        // This assumes you'll add a 'numberPuzzleOpenTime' to your settings
+        if (!settings.puzzleOpenTime || new Date() < new Date(settings.puzzleOpenTime)) {
+            return res.status(403).json({ error: 'The Number Puzzle game is not open yet.' });
+        }
+        const { teamId } = req.params;
+        const { score } = req.body;
+        if (typeof score !== 'number') {
+            return res.status(400).json({ error: 'Invalid score provided.' });
+        }
+        const team = await hackforge.findById(teamId);
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found.' });
+        }
+        if (team.numberPuzzlePlayed) {
+            return res.status(403).json({ error: 'Number Puzzle has already been played by this team.' });
+        }
+        team.numberPuzzleScore = score;
+        team.numberPuzzlePlayed = true;
+        await team.save();
+        res.status(200).json({ success: true, message: 'Score saved successfully.', team });
+    } catch (error) {
+        console.error('Error saving number puzzle score:', error);
+        res.status(500).json({ error: 'Server error while saving score.' });
+    }
+};
+
+
 exports.submitAttendance = async (req, res) => {
     try {
         const { teamId, roundNumber, attendanceData } = req.body;

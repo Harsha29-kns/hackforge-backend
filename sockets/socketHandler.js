@@ -73,8 +73,15 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             console.log(`Game opening time updated in DB: ${settings.gameOpenTime}`);
             io.emit("gameStatusUpdate", settings.gameOpenTime);
         });
+        socket.on("admin:setPuzzleOpenTime", async (isoTimestamp) => {
+        settings.puzzleOpenTime = isoTimestamp;
+        await settings.save();
+        console.log(`Puzzle opening time updated in DB: ${settings.puzzleOpenTime}`);
+        io.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
+        });
         socket.on("getGameStatus", () => {
             socket.emit("gameStatusUpdate", settings.gameOpenTime);
+            socket.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
         });
 
         socket.on("admin:setRegLimit", async (limit) => {

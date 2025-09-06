@@ -10,6 +10,7 @@ const serverSettingSchema = new mongoose.Schema({
     domainStat: { type: Boolean, default: false }, // Can also be a Date if you prefer
     latestEventUpdate: { type: String, default: "" },
     gameOpenTime: { type: Date, default: null },
+    puzzleOpenTime: { type: Date, default: null },
 });
 
 const ServerSetting = mongoose.model('ServerSetting', serverSettingSchema);

@@ -54,6 +54,8 @@ const eventSchema = new mongoose.Schema({
     ThirdReview: Object,
     memoryGameScore: { type: Number, default: null },
     memoryGamePlayed: { type: Boolean, default: false },
+    numberPuzzleScore: { type: Number, default: null }, // ADD THIS
+    numberPuzzlePlayed: { type: Boolean, default: false }, // ADD THIS
     FirstReviewScore: { type: Number, default: 0 },
     SecoundReviewScore: { type: Number, default: 0 },
     FinalScore: Number,
