@@ -4,6 +4,7 @@ const hackforge = require("../module/hackforge"); // Adjust path if necessary
 const qrcode = require('qrcode');
 const { sendEmail } = require('../services/emailService');
 const { paymentVerificationTemplate, qrCodeEmailTemplate } = require('../templates/emailTemplates');
+const ServerSetting = require("../module/ServerSetting");
 
 exports.getTeamCount = async (req, res) => {
     try {
@@ -216,6 +217,7 @@ exports.verifyTeam = async (req, res) => {
 
 exports.submitNumberPuzzleScore = async (req, res) => {
     try {
+        const settings = await ServerSetting.findOne({ singleton: "main" }); // <-- Add this line
         // This assumes you'll add a 'numberPuzzleOpenTime' to your settings
         if (!settings.puzzleOpenTime || new Date() < new Date(settings.puzzleOpenTime)) {
             return res.status(403).json({ error: 'The Number Puzzle game is not open yet.' });
