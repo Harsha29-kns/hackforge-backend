@@ -24,7 +24,7 @@ router.post('/team/:teamId/number-puzzle-score', teamController.submitNumberPuzz
 router.post("/pro/:id", teamController.updateProblemId);
 router.post("/sector/:id", teamController.updateSector);
 router.post("/updateDomain", teamController.updateDomain);
-router.post("/Hack/:id/verify/:id", teamController.verifyTeam);
+router.post("/Hack/verify/:id", teamController.verifyTeam);
 router.post("/admin/reset-domains", teamController.resetAllDomains);
 
 // --- Attendance Routes ---

@@ -201,8 +201,8 @@ exports.verifyTeam = async (req, res) => {
             req.io.emit("updateTeamCount", verifiedTeamCount);
         }
 
-        const emailContent = qrCodeEmailTemplate(team.name, team.teamname, emailMemberList);
-        await sendEmail(team.email, `Your Team ${team.teamname} is Verified - QR Codes Attached`, emailContent, emailAttachments);
+        // const emailContent = qrCodeEmailTemplate(team.name, team.teamname, emailMemberList);
+        // await sendEmail(team.email, `Your Team ${team.teamname} is Verified - QR Codes Attached`, emailContent, emailAttachments);
 
         res.status(200).json({
             message: "Team verified and QR codes sent successfully",
@@ -210,8 +210,15 @@ exports.verifyTeam = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Error verifying team:", err);
-        res.status(500).json({ error: "Internal server error" });
+        // THIS IS THE CRITICAL CHANGE
+        console.error("--- VERIFICATION FAILED ---");
+        console.error("Team ID:", req.params.id);
+        console.error("Error Details:", err); // This will print the full error object
+
+        res.status(500).json({ 
+            error: "Internal server error during verification.",
+            details: err.message 
+        });
     }
 };
 
