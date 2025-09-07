@@ -19,12 +19,13 @@ router.get("/team/:id", teamController.getTeamById);
 router.post("/team/score/:id", teamController.updateScore2);
 router.post("/team/score1/:id", teamController.updateScore1);
 router.post('/team/:teamId/number-puzzle-score', teamController.submitNumberPuzzleScore);
+router.post('/team/:teamId/game-score', teamController.submitGameScore);
 
 // --- Update Routes ---
 router.post("/pro/:id", teamController.updateProblemId);
 router.post("/sector/:id", teamController.updateSector);
 router.post("/updateDomain", teamController.updateDomain);
-router.post("/Hack/verify/:id", teamController.verifyTeam);
+router.post("/verify/:id", teamController.verifyTeam);
 router.post("/admin/reset-domains", teamController.resetAllDomains);
 
 // --- Attendance Routes ---
@@ -34,5 +35,6 @@ router.post("/attendance/submit", teamController.submitAttendance);
 router.get("/issues", teamController.getIssues);
 router.post("/issue/:teamId", teamController.addIssue);
 router.post("/issue/resolve/:teamId/:issueId", teamController.resolveIssue);
+
 
 module.exports = router;

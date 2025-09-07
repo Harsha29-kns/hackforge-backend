@@ -48,34 +48,6 @@ app.get("/domains", async (req, res) => {
     }
 });
 
-// --- Game Score Route --- Memory Game
-app.post('/Hack/team/:teamId/game-score', async (req, res) => {
-    try {
-        if (!settings.gameOpenTime || new Date() < new Date(settings.gameOpenTime)) {
-            return res.status(403).json({ error: 'The game is not open yet.' });
-        }
-        const { teamId } = req.params;
-        const { score } = req.body;
-        if (typeof score !== 'number') {
-            return res.status(400).json({ error: 'Invalid score provided.' });
-        }
-        const team = await hackforge.findById(teamId);
-        if (!team) {
-            return res.status(404).json({ error: 'Team not found.' });
-        }
-        if (team.memoryGamePlayed) {
-            return res.status(403).json({ error: 'Game has already been played by this team.' });
-        }
-        team.memoryGameScore = score;
-        team.memoryGamePlayed = true;
-        await team.save();
-        res.status(200).json({ success: true, message: 'Score saved successfully.', team });
-    } catch (error) {
-        console.error('Error saving game score:', error);
-        res.status(500).json({ error: 'Server error while saving score.' });
-    }
-});
-
 // --- ADMIN-ONLY API ROUTES ---
 app.post('/api/admin/clear-all-sessions', (req, res) => {
 
