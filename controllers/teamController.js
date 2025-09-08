@@ -93,8 +93,39 @@ exports.registerTeam = async (req, res) => {
     }
 };
 
+exports.submitInternalGameScore = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const { score } = req.body;
+
+        if (typeof score !== 'number') {
+            return res.status(400).json({ error: 'Invalid score provided. Must be a number.' });
+        }
+
+        const team = await hackforge.findById(teamId);
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found.' });
+        }
+
+        team.internalGameScore = score;
+        await team.save();
+
+        // Notify clients that team data has been updated
+        if (req.io) {
+            req.io.emit("team", team);
+        }
+
+        res.status(200).json({ success: true, message: 'Internal score updated successfully.', team });
+    } catch (error) {
+        console.error('Error saving internal game score:', error);
+        res.status(500).json({ error: 'Server error while saving score.' });
+    }
+};
+
+
 exports.submitGameScore = async (req, res) => {
     try {
+        const settings = await ServerSetting.findOne({ singleton: "main" });
         if (!settings.gameOpenTime || new Date() < new Date(settings.gameOpenTime)) {
             return res.status(403).json({ error: 'The game is not open yet.' });
         }
@@ -175,16 +206,6 @@ exports.updateScore1 = async (req, res) => {
     }
 };
 
-exports.updateProblemId = async (req, res) => {
-    const { id } = req.params;
-    const { projectId } = req.body;
-    const team = await hackforge.findById(id);
-    team.ProblemID = projectId;
-    await team.save();
-    res.json("done");
-};
-
-
 exports.verifyTeam = async (req, res) => {
     try {
         const { id } = req.params;
@@ -250,6 +271,40 @@ exports.verifyTeam = async (req, res) => {
         });
     }
 };
+
+exports.submitStopTheBarScore = async (req, res) => {
+    try {
+        const settings = await ServerSetting.findOne({ singleton: "main" });
+        if (!settings.stopTheBarOpenTime || new Date() < new Date(settings.stopTheBarOpenTime)) {
+            return res.status(403).json({ error: 'The "Stop the Bar" game is not open yet.' });
+        }
+
+        const { teamId } = req.params;
+        const { score } = req.body;
+
+        if (typeof score !== 'number') {
+            return res.status(400).json({ error: 'Invalid score provided.' });
+        }
+
+        const team = await hackforge.findById(teamId);
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found.' });
+        }
+        if (team.stopTheBarPlayed) {
+            return res.status(403).json({ error: 'This game has already been played by your team.' });
+        }
+
+        team.stopTheBarScore = score;
+        team.stopTheBarPlayed = true;
+        await team.save();
+
+        res.status(200).json({ success: true, message: 'Score saved successfully.', team });
+    } catch (error) {
+        console.error('Error saving Stop the Bar score:', error);
+        res.status(500).json({ error: 'Server error while saving score.' });
+    }
+};
+
 
 exports.submitNumberPuzzleScore = async (req, res) => {
     try {

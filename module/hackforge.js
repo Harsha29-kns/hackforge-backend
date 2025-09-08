@@ -45,17 +45,18 @@ const eventSchema = new mongoose.Schema({
     transtationId: String,
     imgUrl: String,
     verified: { type: Boolean, default: false },
-    ProblemStatement: String,
     Domain: String,
     GameScore: Number,
     password: String,
     FirstReview: Object,
     SecoundReview: Object,
-    ThirdReview: Object,
     memoryGameScore: { type: Number, default: null },
     memoryGamePlayed: { type: Boolean, default: false },
     numberPuzzleScore: { type: Number, default: null }, // ADD THIS
     numberPuzzlePlayed: { type: Boolean, default: false }, // ADD THIS
+    internalGameScore: { type: Number, default: 0 },
+    stopTheBarScore: { type: Number, default: null }, // <-- ADD THIS
+    stopTheBarPlayed: { type: Boolean, default: false }, // <-- ADD THIS
     FirstReviewScore: { type: Number, default: 0 },
     SecoundReviewScore: { type: Number, default: 0 },
     FinalScore: Number,
@@ -78,7 +79,7 @@ async function data() {
     for (let i of teams) {
         const password = i.registrationNumber.slice(-1) + i.teamMembers.map((i) => { return i.registrationNumber.slice(-1) }).join("");
         if (pass.includes(password)) {
-            console.log("wrong---", password, i.teamname);
+            console.log("wrong", password, i.teamname);
         } else {
             console.log(i.teamname, password);
             i.password = password;

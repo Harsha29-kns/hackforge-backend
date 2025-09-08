@@ -20,9 +20,11 @@ router.post("/team/score/:id", teamController.updateScore2);
 router.post("/team/score1/:id", teamController.updateScore1);
 router.post('/team/:teamId/number-puzzle-score', teamController.submitNumberPuzzleScore);
 router.post('/team/:teamId/game-score', teamController.submitGameScore);
+router.post('/team/:teamId/internal-score', teamController.submitInternalGameScore);
+router.post('/team/:teamId/stop-the-bar-score', teamController.submitStopTheBarScore);
 
 // --- Update Routes ---
-router.post("/pro/:id", teamController.updateProblemId);
+
 router.post("/sector/:id", teamController.updateSector);
 router.post("/updateDomain", teamController.updateDomain);
 router.post("/verify/:id", teamController.verifyTeam);

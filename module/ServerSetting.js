@@ -11,6 +11,7 @@ const serverSettingSchema = new mongoose.Schema({
     latestEventUpdate: { type: String, default: "" },
     gameOpenTime: { type: Date, default: null },
     puzzleOpenTime: { type: Date, default: null },
+    stopTheBarOpenTime: { type: Date, default: null },
 });
 
 const ServerSetting = mongoose.model('ServerSetting', serverSettingSchema);

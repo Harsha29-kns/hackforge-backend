@@ -79,10 +79,19 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         console.log(`Puzzle opening time updated in DB: ${settings.puzzleOpenTime}`);
         io.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
         });
+        socket.on("admin:setStopTheBarTime", async (isoTimestamp) => {
+            settings.stopTheBarOpenTime = isoTimestamp;
+            await settings.save();
+            console.log(`Stop the Bar opening time updated in DB: ${settings.stopTheBarOpenTime}`);
+            io.emit("stopTheBarStatusUpdate", settings.stopTheBarOpenTime); // Broadcast the new time
+        });
         socket.on("getGameStatus", () => {
             socket.emit("gameStatusUpdate", settings.gameOpenTime);
             socket.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
+            socket.emit("stopTheBarStatusUpdate", settings.stopTheBarOpenTime); // Send the current Stop the Bar time
         });
+
+
 
         socket.on("admin:setRegLimit", async (limit) => {
             const newLimit = parseInt(limit, 10);
