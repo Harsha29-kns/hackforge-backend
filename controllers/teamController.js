@@ -176,6 +176,21 @@ exports.getAllStudents = async (req, res) => {
     }
 };
 
+exports.updateScore3 = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ThirdReview, score } = req.body;
+        let Team = await hackforge.findById(id);
+        Team.ThirdReview = ThirdReview;
+        Team.ThirdReviewScore = score;
+        Team.FinalScore = Team.FirstReviewScore + Team.SecoundReviewScore + Team.ThirdReviewScore;
+        await Team.save();
+        res.json("done");
+    } catch (e) {
+        res.status(420).json("Server error");
+    }
+};
+
 exports.updateScore2 = async (req, res) => {
     try {
         const { id } = req.params;
