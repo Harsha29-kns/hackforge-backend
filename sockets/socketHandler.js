@@ -59,6 +59,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                 if (activeTeamSessions.get(socket.teamId) === socket.id) {
                     activeTeamSessions.delete(socket.teamId);
                     console.log(`[Login Lock] Team ${socket.teamId} has logged out. Session released.`);
+                    broadcastActiveSessions(); // Notify all admins about the updated active sessions
                 }
             }
         });
