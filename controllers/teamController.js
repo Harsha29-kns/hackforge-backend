@@ -168,8 +168,25 @@ exports.getTeamById = async (req, res) => {
 
 exports.getAllStudents = async (req, res) => {
     try {
-        const teams = await hackforge.find();
-        res.status(200).json(teams);
+        // --- Pagination Logic ---
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 0; // Default to 0 to return all if no limit is set
+        const skip = (page - 1) * limit;
+
+        let teamsQuery = hackforge.find();
+
+        if (limit > 0) {
+            teamsQuery = teamsQuery.skip(skip).limit(limit);
+        }
+
+        const teams = await teamsQuery;
+        const totalTeams = await hackforge.countDocuments();
+
+        res.status(200).json({
+            teams,
+            totalPages: limit > 0 ? Math.ceil(totalTeams / limit) : 1,
+            currentPage: page,
+        });
     } catch (err) {
         console.error("Error in /students:", err);
         res.status(500).json({ error: "Internal server error" });
@@ -226,6 +243,30 @@ exports.updateScore1 = async (req, res) => {
     } catch (e) {
         console.log(e);
         res.status(500).json("Server error");
+    }
+};
+
+exports.getTeamsForJudge = async (req, res) => {
+    const { judgeId } = req.params;
+
+    try {
+        let teamsForJudge = [];
+        const narutoTeams = await hackforge.find({ Sector: "Naruto" });
+        const sasukeTeams = await hackforge.find({ Sector: "Sasuke" }).sort({ teamname: 1 }); // Sort to ensure consistent slicing
+        const itachiTeams = await hackforge.find({ Sector: "Itachi" });
+
+        if (judgeId === "judge1") {
+            teamsForJudge = [...narutoTeams, ...sasukeTeams.slice(0, 10)];
+        } else if (judgeId === "judge2") {
+            teamsForJudge = [...itachiTeams, ...sasukeTeams.slice(10)];
+        } else {
+            return res.status(400).json({ message: "Invalid judge ID." });
+        }
+
+        res.status(200).json(teamsForJudge);
+    } catch (error) {
+        console.error("Error fetching teams for judge:", error);
+        res.status(500).json({ message: "Server error while fetching teams for judge." });
     }
 };
 

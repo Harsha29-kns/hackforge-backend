@@ -12,6 +12,7 @@ router.get("/teams/count", teamController.getTeamCount);
 router.get("/test-email", teamController.testEmail);
 router.post("/register", teamController.registerTeam);
 router.get("/students", teamController.getAllStudents);
+router.get("/judge/:judgeId/teams", teamController.getTeamsForJudge); 
 
 // --- Individual Team Routes ---
 router.post("/team/:password", teamController.loginTeam);
