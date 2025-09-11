@@ -175,7 +175,7 @@ exports.getAllStudents = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
-
+{/*
 exports.updateScore3 = async (req, res) => {
     try {
         const { id } = req.params;
@@ -190,7 +190,7 @@ exports.updateScore3 = async (req, res) => {
         res.status(420).json("Server error");
     }
 };
-
+*/} //3 review removed
 exports.updateScore2 = async (req, res) => {
     try {
         const { id } = req.params;
@@ -198,7 +198,7 @@ exports.updateScore2 = async (req, res) => {
         let Team = await hackforge.findById(id);
         Team.SecoundReview = SecoundReview;
         Team.SecoundReviewScore = score;
-        Team.FinalScore = Team.FirstReviewScore + Team.SecoundReviewScore;
+        Team.FinalScore = Team.FirstReviewScore + Team.SecoundReviewScore; // + Team.ThirdReviewScore; //3 review removed
         await Team.save();
         res.json("done");
     } catch (e) {

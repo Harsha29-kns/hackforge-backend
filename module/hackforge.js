@@ -50,7 +50,7 @@ const eventSchema = new mongoose.Schema({
     password: String,
     FirstReview: Object,
     SecoundReview: Object,
-    ThirdReview: Object,
+    //ThirdReview: Object, //3 review removed
     memoryGameScore: { type: Number, default: null },
     memoryGamePlayed: { type: Boolean, default: false },
     numberPuzzleScore: { type: Number, default: null }, // ADD THIS
@@ -60,7 +60,7 @@ const eventSchema = new mongoose.Schema({
     stopTheBarPlayed: { type: Boolean, default: false }, // <-- ADD THIS
     FirstReviewScore: { type: Number, default: 0 },
     SecoundReviewScore: { type: Number, default: 0 },
-    ThirdReviewScore: { type: Number, default: 0 },
+    //ThirdReviewScore: { type: Number, default: 0 }, //3 review removed
     FinalScore: Number,
     Sector: String,
     

@@ -18,7 +18,7 @@ router.post("/team/:password", teamController.loginTeam);
 router.get("/team/:id", teamController.getTeamById);
 router.post("/team/score/:id", teamController.updateScore2);
 router.post("/team/score1/:id", teamController.updateScore1);
-router.post("/team/score3/:id", teamController.updateScore3);
+//router.post("/team/score3/:id", teamController.updateScore3);
 router.post('/team/:teamId/number-puzzle-score', teamController.submitNumberPuzzleScore);
 router.post('/team/:teamId/game-score', teamController.submitGameScore);
 router.post('/team/:teamId/internal-score', teamController.submitInternalGameScore);
