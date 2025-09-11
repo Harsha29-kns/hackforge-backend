@@ -192,6 +192,10 @@ exports.updateScore3 = async (req, res) => {
 };
 */} //3 review removed
 exports.updateScore2 = async (req, res) => {
+    const settings = await ServerSetting.findOne({ singleton: "main" });
+    if (!settings.isSecondReviewOpen) {
+        return res.status(403).json({ message: "The second review round is currently closed." });
+    }
     try {
         const { id } = req.params;
         const { SecoundReview, score } = req.body;
@@ -207,6 +211,10 @@ exports.updateScore2 = async (req, res) => {
 };
 
 exports.updateScore1 = async (req, res) => {
+    const settings = await ServerSetting.findOne({ singleton: "main" });
+    if (!settings.isFirstReviewOpen) {
+        return res.status(403).json({ message: "The first review round is currently closed." });
+    }
     try {
         const { id } = req.params;
         const { FirstReview, score } = req.body;

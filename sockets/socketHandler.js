@@ -211,6 +211,35 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                 await Team.save();
             }
         });
+            socket.on("admin:setFirstReviewState", async (isOpen) => {
+            settings.isFirstReviewOpen = isOpen;
+            await settings.save();
+            console.log(`First review state changed to: ${isOpen}`);
+            io.emit("reviewStatusUpdate", { 
+                isFirstReviewOpen: settings.isFirstReviewOpen,
+                isSecondReviewOpen: settings.isSecondReviewOpen 
+            });
+        });
+
+        socket.on("admin:setSecondReviewState", async (isOpen) => {
+            settings.isSecondReviewOpen = isOpen;
+            await settings.save();
+            console.log(`Second review state changed to: ${isOpen}`);
+            io.emit("reviewStatusUpdate", {
+                isFirstReviewOpen: settings.isFirstReviewOpen,
+                isSecondReviewOpen: settings.isSecondReviewOpen
+                
+            });
+        });
+
+        // For judges to get the current status on component mount
+        socket.on("judge:getReviewStatus", () => {
+            console.log("Judge requested review status");
+            socket.emit("reviewStatusUpdate", {
+                isFirstReviewOpen: settings.isFirstReviewOpen,
+                isSecondReviewOpen: settings.isSecondReviewOpen
+            });
+        });
 
         socket.on("admin:sendReminder", async (data) => {
             const newReminder = new Reminder({ message: data.message });
@@ -226,6 +255,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             console.log(`Broadcasted PPT template: ${data.fileName}`);
         });
     });
+    
 }
 
 module.exports = initializeSockets;

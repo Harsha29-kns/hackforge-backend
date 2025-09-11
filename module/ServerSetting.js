@@ -12,6 +12,9 @@ const serverSettingSchema = new mongoose.Schema({
     gameOpenTime: { type: Date, default: null },
     puzzleOpenTime: { type: Date, default: null },
     stopTheBarOpenTime: { type: Date, default: null },
+    isFirstReviewOpen: { type: Boolean, default: false }, // New field for first review
+    isSecondReviewOpen: { type: Boolean, default: false }, // New field for second review
+
 });
 
 const ServerSetting = mongoose.model('ServerSetting', serverSettingSchema);
