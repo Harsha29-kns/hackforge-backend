@@ -52,15 +52,19 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
 
         // 2. When a user disconnects (e.g., closes browser), release the lock
         socket.on('disconnect', () => {
-            console.log(`A user disconnected: ${socket.id}`);
+            console.log(`Socket ${socket.id} disconnected.`);
             // Check if this disconnected socket was holding a session lock
             if (socket.teamId) {
                 // Only release the lock if the disconnecting socket is the one that holds it
                 if (activeTeamSessions.get(socket.teamId) === socket.id) {
                     activeTeamSessions.delete(socket.teamId);
-                    console.log(`[Login Lock] Team ${socket.teamId} has logged out. Session released.`);
+                    console.log(`[SUCCESS] Released session for Team ID: ${socket.teamId}. Active sessions: ${activeTeamSessions.size}`);
                     broadcastActiveSessions(); // Notify all admins about the updated active sessions
+                } else {
+                    console.log(`[WARNING] Socket for Team ID ${socket.teamId} disconnected, but it was not the session holder. No action taken.`);
                 }
+            } else {
+                console.log(`[INFO] A socket disconnected without a teamId.`);
             }
         });
 
