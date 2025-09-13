@@ -192,6 +192,16 @@ exports.getAllStudents = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
+exports.getStudentsBySector = async (req, res) => { // New function to get teams by sector
+    try {
+        const { sector } = req.params;
+        const teams = await hackforge.find({ Sector: sector });
+        res.status(200).json({ teams });
+    } catch (err) {
+        console.error("Error in /students/:sector:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
 {/*
 exports.updateScore3 = async (req, res) => {
     try {

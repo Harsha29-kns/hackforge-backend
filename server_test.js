@@ -17,7 +17,7 @@ async function runLoadTest() {
             axios.get(`${SERVER_URL}/domains`)
         ]);
 
-        const allTeams = teamsRes.data.filter(t => t.verified); // We only care about verified teams
+        const allTeams = teamsRes.data.teams.filter(t => t.verified); // We only care about verified teams
         const allDomains = domainsRes.data.filter(d => d.slots > 0); // We only care about domains with slots
 
         if (allTeams.length === 0 || allDomains.length === 0) {

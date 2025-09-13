@@ -3,7 +3,8 @@ const { io } = require('socket.io-client');
 
 // --- CONFIGURATION ---
 // IMPORTANT: Change this to your live server URL when testing in production
-const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com';
+//const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com';
+const BASE_URL = 'http://localhost:3001';
 
 async function runDomainSelectionTest() {
   console.log('🚀 Starting domain selection load test...');
@@ -17,7 +18,7 @@ async function runDomainSelectionTest() {
     ]);
 
     // Filter for teams that are verified and haven't selected a domain yet
-    const teamsToTest = teamsRes.data.filter(t => t.verified && !t.Domain);
+    const teamsToTest = teamsRes.data.teams.filter(t => t.verified && !t.Domain);
     const availableDomains = domainsRes.data.filter(d => d.slots > 0);
 
     if (teamsToTest.length === 0) {

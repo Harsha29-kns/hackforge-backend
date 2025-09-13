@@ -26,7 +26,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             // Check if this team already has an active session
             if (activeTeamSessions.has(teamId)) {
                 // If yes, reject this new login attempt
-                socket.emit('login:error', { message: 'This team is already logged in elsewhere.' });
+                socket.emit('login:error', { message: 'This team is already logged in another device or contact sector incharge.' });
                 return;
             }
 
