@@ -52,7 +52,7 @@ app.get("/domains", async (req, res) => {
 app.post('/api/admin/clear-all-sessions', (req, res) => {
 
     const secret = req.headers['x-admin-secret'];
-    if (secret !== 'clean') { // Replace with a real secret from your environment variables
+    if (secret !== 'clean') { // clean used for deletion of sessions
         return res.status(403).json({ message: 'Forbidden: Invalid admin secret.' });
     }
 
