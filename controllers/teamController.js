@@ -114,6 +114,9 @@ exports.submitInternalGameScore = async (req, res) => {
         if (req.io) {
             req.io.emit("team", team);
         }
+        if (req.io) {
+            req.io.emit('scores:updated');
+        }
 
         res.status(200).json({ success: true, message: 'Internal score updated successfully.', team });
     } catch (error) {
@@ -144,12 +147,49 @@ exports.submitGameScore = async (req, res) => {
         team.memoryGameScore = score;
         team.memoryGamePlayed = true;
         await team.save();
+        if (req.io) {
+            req.io.emit('scores:updated'); // Notify all clients that scores have been updated
+        }
         res.status(200).json({ success: true, message: 'Score saved successfully.', team });
     } catch (error) {
         console.error('Error saving game score:', error);
         res.status(500).json({ error: 'Server error while saving score.' });
     }
 };
+
+exports.getReviewTeamsForJudge = async (req, res) => {
+    const { judgeId } = req.params;
+    if (!['judge1', 'judge2'].includes(judgeId)) {
+        return res.status(400).json({ message: "Invalid judge ID." });
+    }
+
+    try {
+        let query = {};
+        if (judgeId === 'judge1') {
+            const sasukeTeams = await hackforge.find({ Sector: "Sasuke" }, '_id').sort({ teamname: 1 }).limit(10);
+            const sasukeIds = sasukeTeams.map(t => t._id);
+            query = { $or: [{ Sector: "Naruto" }, { _id: { $in: sasukeIds } }] };
+        } else { // judge2
+            const sasukeTeams = await hackforge.find({ Sector: "Sasuke" }, '_id').sort({ teamname: 1 }).skip(10);
+            const sasukeIds = sasukeTeams.map(t => t._id);
+            query = { $or: [{ Sector: "Itachi" }, { _id: { $in: sasukeIds } }] };
+        }
+
+        // --- FIX IS ON THIS LINE ---
+        // Fetch only the data needed, now including the Sector
+        const teams = await hackforge.find(query, 
+            'teamname Sector FirstReview FirstReviewScore SecoundReview SecoundReviewScore'
+        );
+
+        res.status(200).json(teams);
+
+    } catch (error) {
+        console.error("Error fetching review teams for judge:", error);
+        res.status(500).json({ message: "Server error while fetching teams." });
+    }
+};
+
+
     
 
 exports.getTeamById = async (req, res) => {
@@ -202,6 +242,35 @@ exports.getStudentsBySector = async (req, res) => { // New function to get teams
         res.status(500).json({ error: "Internal server error" });
     }
 };
+exports.getGameLeaderboard = async (req, res) => {
+    try {
+        const teams = await hackforge.find(
+            { verified: true }, // Only show verified teams
+            'teamname memoryGameScore numberPuzzleScore stopTheBarScore internalGameScore' // Fetch all needed scores
+        )
+        .lean(); // Use .lean() for faster, plain JavaScript objects
+
+        // The backend calculates the total score and includes individual scores
+        const leaderboard = teams.map(team => ({
+            _id: team._id,
+            teamname: team.teamname,
+            memoryGameScore: team.memoryGameScore || 0,
+            numberPuzzleScore: team.numberPuzzleScore || 0,
+            stopTheBarScore: team.stopTheBarScore || 0,
+            internalGameScore: team.internalGameScore || 0,
+            totalScore: (team.memoryGameScore || 0) + (team.numberPuzzleScore || 0) + (team.stopTheBarScore || 0) + (team.internalGameScore || 0)
+        })).sort((a, b) => b.totalScore - a.totalScore); // Final sort after calculation
+
+        res.status(200).json({ leaderboard });
+
+    } catch (err) {
+        console.error("Error fetching game leaderboard:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
 {/*
 exports.updateScore3 = async (req, res) => {
     try {
@@ -371,6 +440,9 @@ exports.submitStopTheBarScore = async (req, res) => {
         team.stopTheBarScore = score;
         team.stopTheBarPlayed = true;
         await team.save();
+        if (req.io) {
+            req.io.emit('scores:updated');
+        }
 
         res.status(200).json({ success: true, message: 'Score saved successfully.', team });
     } catch (error) {
@@ -402,6 +474,9 @@ exports.submitNumberPuzzleScore = async (req, res) => {
         team.numberPuzzleScore = score;
         team.numberPuzzlePlayed = true;
         await team.save();
+        if (req.io) {
+            req.io.emit('scores:updated');
+        }
         res.status(200).json({ success: true, message: 'Score saved successfully.', team });
     } catch (error) {
         console.error('Error saving number puzzle score:', error);

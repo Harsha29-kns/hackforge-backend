@@ -12,8 +12,9 @@ router.get("/teams/count", teamController.getTeamCount);
 router.get("/test-email", teamController.testEmail);
 router.post("/register", teamController.registerTeam);
 router.get("/students", teamController.getAllStudents);
-router.get("/judge/:judgeId/teams", teamController.getTeamsForJudge);
+router.get("/judge/:judgeId/teams", teamController.getTeamsForJudge); // Teams assigned to a judge
 router.get("/students/:sector", teamController.getStudentsBySector); // Filtered by sector
+router.get("/leaderboard/game", teamController.getGameLeaderboard); // Game leaderboard
 
 // --- Individual Team Routes ---
 router.post("/team/:password", teamController.loginTeam);
@@ -25,6 +26,7 @@ router.post('/team/:teamId/number-puzzle-score', teamController.submitNumberPuzz
 router.post('/team/:teamId/game-score', teamController.submitGameScore);
 router.post('/team/:teamId/internal-score', teamController.submitInternalGameScore);
 router.post('/team/:teamId/stop-the-bar-score', teamController.submitStopTheBarScore);
+router.get("/review/teams/:judgeId", teamController.getReviewTeamsForJudge); // Teams for review by judge
 
 // --- Update Routes ---
 
