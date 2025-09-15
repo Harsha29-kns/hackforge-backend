@@ -2,7 +2,7 @@ const axios = require('axios');
 const { io } = require('socket.io-client');
 
 // --- CONFIGURATION ---
-const BASE_URL = 'http://localhost:3001'; // Use your actual server URL
+const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com'; // Use your actual server URL
 const REFRESH_DURATION_MS = 20000; // 10 seconds
 
 /**

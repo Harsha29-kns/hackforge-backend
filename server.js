@@ -1,52 +1,79 @@
+// --- Core Node.js Modules for Clustering ---
+const cluster = require('cluster');
+const os = require('os');
+const http = require('http');
+
+// --- Your Existing Imports ---
 const mongoose = require("mongoose");
 const express = require("express");
-const http = require("http");
 const socketio = require("socket.io");
 const cors = require("cors");
-
-// --- Local Module Imports ---
 const connectDB = require("./db");
 const teamRoutes = require("./routes/teamRoutes");
 const initializeSockets = require('./sockets/socketHandler');
-
-// --- Schema Imports ---
 const hackforge = require("./module/hackforge");
 const Domain = require("./module/Domain");
 const ServerSetting = require("./module/ServerSetting");
 
-// --- Server Setup ---
-const app = express();
-const server = http.createServer(app);
-const io = socketio(server, { cors: { origin: "*" } });
+const numCPUs = os.cpus().length;
 
-// --- Global State Variables ---
-let settings;
-let currentRegistrationCount = 0;
-const activeTeamSessions = new Map();
+// ====================================================================
+// --- MASTER PROCESS LOGIC ---
+// The master process's only job is to create and manage worker processes.
+// ====================================================================
+if (cluster.isMaster) {
+    console.log(`🚀 Master process ${process.pid} is running`);
+    console.log(`🖥️  Forking server for ${numCPUs} CPU cores...`);
 
-// --- Core Middleware ---
-app.use(cors({ origin: "*" }));
-app.use(express.json());
-
-// --- Global Routes ---
-app.get("/", (req, res) => {
-    res.send("hi i am Checkpoint server");
-});
-
-// --- API to fetch domains ---
-app.get("/domains", async (req, res) => {
-    try {
-        const domains = await Domain.find({});
-        const mapped = domains.map((d) => ({
-            ...d.toObject(),
-            isFull: d.slots <= 0,
-        }));
-        res.status(200).json(mapped);
-    } catch (error) {
-        console.error("Error fetching domains:", error);
-        res.status(500).json({ message: "Server error while fetching domains." });
+    // Create a worker for each CPU core
+    for (let i = 0; i < numCPUs; i++) {
+        cluster.fork();
     }
-});
+
+    // If a worker process dies, create a new one to replace it
+    cluster.on('exit', (worker, code, signal) => {
+        console.error(`Worker ${worker.process.pid} died. Forking a new one...`);
+        cluster.fork();
+    });
+
+} else {
+    // ====================================================================
+    // --- WORKER PROCESS LOGIC ---
+    // All of your application's logic runs inside the worker processes.
+    // ====================================================================
+
+    // --- Server Setup ---
+    const app = express();
+    const server = http.createServer(app);
+    const io = socketio(server, { cors: { origin: "*" } });
+
+    // --- Global State Variables ---
+    let settings;
+    let currentRegistrationCount = 0;
+    const activeTeamSessions = new Map(); // Note: This map is local to EACH worker.
+
+    // --- Core Middleware ---
+    app.use(cors({ origin: "*" }));
+    app.use(express.json());
+
+    // --- Global Routes ---
+    app.get("/", (req, res) => {
+        res.send(`Hi, I am worker process ${process.pid}`);
+    });
+
+    app.get("/domains", async (req, res) => {
+        try {
+            const domains = await Domain.find({}).lean(); // Use .lean() for faster reads
+            const mapped = domains.map((d) => ({
+                ...d,
+                isFull: d.slots <= 0,
+            }));
+            res.status(200).json(mapped);
+        } catch (error) {
+            console.error("Error fetching domains:", error);
+            res.status(500).json({ message: "Server error while fetching domains." });
+        }
+    });
 
 // --- ADMIN-ONLY API ROUTES ---
 app.post('/api/admin/clear-all-sessions', (req, res) => {
@@ -168,7 +195,7 @@ const startServer = async () => {
     
     const PORT = process.env.PORT || 3001;
     server.listen(PORT, () => {
-        console.log(`🚀 Server running at http://localhost:${PORT}`);
+        console.log(`✅ Worker ${process.pid} started and listening at http://localhost:${PORT}`);
     });
 
     // Periodically check registration status
@@ -176,3 +203,4 @@ const startServer = async () => {
 };
 
 startServer();
+}
