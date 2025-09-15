@@ -32,15 +32,32 @@ exports.testEmail = async (req, res) => {
     }
 };
 
+// In controllers/teamController.js
+
 exports.loginTeam = async (req, res) => {
+    const { password } = req.params;
+    const startTime = Date.now(); // Start the timer
+
     try {
-        const { password } = req.params;
-        const team = await hackforge.findOne({ password: password, verified: true });
+        console.log(`[Login Start] [Team: ${password}] - Request received.`);
+
+        // Step 1: Query the database
+        const team = await hackforge.findOne({ password: password, verified: true }).lean(); // Using .lean() for speed
+        
+        const dbQueryTime = Date.now();
+        console.log(`[DB Query] [Team: ${password}] - Database lookup finished in ${dbQueryTime - startTime}ms.`);
+
         if (team) {
-            return res.json(team);
+            res.status(200).json(team);
+        } else {
+            res.status(401).json({ message: "Invalid credentials" });
         }
-        res.status(401).json({ message: "Invalid credentials" });
+        
+        const responseSentTime = Date.now();
+        console.log(`[Login End] [Team: ${password}] - Response sent. Total time: ${responseSentTime - startTime}ms.`);
+
     } catch (e) {
+        console.error(`[Login Error] [Team: ${password}] - Server error after ${Date.now() - startTime}ms.`, e);
         res.status(500).json({ message: "Server error during login" });
     }
 };
