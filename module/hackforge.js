@@ -27,19 +27,10 @@ const leadSchema = new mongoose.Schema({
 
 // --- MAIN EVENT SCHEMA ---
 const eventSchema = new mongoose.Schema({
-    teamname: {
-        type: String,
-        index: true,
-    },
-    email: {
-        type: String,
-        index: true, // Good to have for potential lookups by email
-    },
-    name: String, // Team Lead's Name
-    registrationNumber: {
-        type: String,
-        index: true, // For fast lookups by the lead's registration number
-    },
+    teamname: String,
+    email: String,
+    name: String,
+    registrationNumber: String,
     room: String,
     type: String,
     year: String,
@@ -54,9 +45,10 @@ const eventSchema = new mongoose.Schema({
     Domain: String,
     GameScore: Number,
     
+    // THIS IS THE FIX
     password: {
         type: String,
-        index: true, // You already added this one! 👍
+        index: true, // <-- ADD THIS LINE to make logins extremely fast
     },
     
     FirstReview: Object,
@@ -71,12 +63,7 @@ const eventSchema = new mongoose.Schema({
     FirstReviewScore: { type: Number, default: 0 },
     SecoundReviewScore: { type: Number, default: 0 },
     FinalScore: Number,
-    
-    Sector: {
-        type: String,
-        index: true, // Speeds up queries for judges based on sector
-    },
-    
+    Sector: String,
     issues: [{
         text: String,
         status: { type: String, default: 'Pending' },

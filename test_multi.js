@@ -2,132 +2,139 @@ const axios = require('axios');
 const { io } = require('socket.io-client');
 
 // --- CONFIGURATION ---
-// IMPORTANT: Change this to your live server URL when testing in production
-//const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com';
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com'; // Use your actual server URL
+const REFRESH_DURATION_MS = 20000; // 10 seconds
 
-async function runDomainSelectionTest() {
-  console.log('🚀 Starting domain selection load test...');
+/**
+ * Simulates a single team logging in and repeatedly refreshing the dashboard data.
+ * @param {object} team - The team object, must contain _id and password.
+ */
+function simulateTeam(team) {
+    return new Promise((resolve, reject) => {
+        let successfulRefreshes = 0;
+        let failedRefreshes = 0;
 
-  try {
-    // Step 1: Fetch all verified teams and available domains
-    console.log('Fetching initial data from server...');
-    const [teamsRes, domainsRes] = await Promise.all([
-      axios.get(`${BASE_URL}/Hack/students`),
-      axios.get(`${BASE_URL}/domains`)
-    ]);
-
-    // Filter for teams that are verified and haven't selected a domain yet
-    const teamsToTest = teamsRes.data.teams.filter(t => t.verified && !t.Domain);
-    const availableDomains = domainsRes.data.filter(d => d.slots > 0);
-
-    if (teamsToTest.length === 0) {
-      console.error('❌ No verified teams without a domain were found. Test cannot proceed.');
-      return;
-    }
-    if (availableDomains.length === 0) {
-        console.error('❌ No domains with available slots were found. Test cannot proceed.');
-        return;
-    }
-    
-    console.log(`✅ Found ${teamsToTest.length} teams ready to select a domain.`);
-    console.log(`✅ Found ${availableDomains.length} unique domains with open slots.`);
-
-    // Step 2: Assign a random available domain to each team for the test
-    const assignments = teamsToTest.map(team => ({
-      teamId: team._id,
-      teamName: team.teamname,
-      password: team.password,
-      domainId: availableDomains[Math.floor(Math.random() * availableDomains.length)].id,
-    }));
-
-    // Step 3: Create a login and domain selection promise for each team
-    const testPromises = assignments.map(assignment => {
-      return new Promise((resolve, reject) => {
         const socket = io(BASE_URL, {
-          transports: ['websocket'],
-          forceNew: true,
+            transports: ['websocket'],
+            forceNew: true,
         });
 
-        const timeout = setTimeout(() => {
-          socket.disconnect();
-          reject({ ...assignment, reason: 'Test timed out after 15 seconds.' });
-        }, 15000); // 15-second timeout
+        // Set a total timeout for the entire simulation for this user
+        const totalTimeout = setTimeout(() => {
+            socket.disconnect();
+            reject({ teamName: team.teamname, reason: `Test timed out after ${REFRESH_DURATION_MS / 1000 + 5000}ms.` });
+        }, REFRESH_DURATION_MS + 5000); // 10s for refresh + 5s buffer
 
         socket.on('connect', () => {
-          // First, log in via HTTP
-          axios.post(`${BASE_URL}/Hack/team/${assignment.password}`)
-            .then(res => {
-              // Then, establish a socket session
-              socket.emit('team:login', res.data._id);
-            })
-            .catch(err => {
-              clearTimeout(timeout);
-              socket.disconnect();
-              reject({ ...assignment, reason: `HTTP login failed: ${err.response?.data?.message || err.message}` });
+            // Step 1: Log in via HTTP to validate the password
+            axios.post(`${BASE_URL}/Hack/team/${team.password}`)
+                .then(res => {
+                    // Step 2: Establish a WebSocket session to mimic a real user
+                    socket.emit('team:login', res.data._id);
+                })
+                .catch(err => {
+                    clearTimeout(totalTimeout);
+                    socket.disconnect();
+                    reject({ teamName: team.teamname, reason: `HTTP login failed: ${err.response?.data?.message || err.message}` });
+                });
+        });
+
+        socket.on('login:success', async () => {
+            console.log(`[${team.teamname}]: Login and session established. Starting refresh test...`);
+            
+            // Step 3: Continuously "refresh" the page data for the set duration
+            const startTime = Date.now();
+            while (Date.now() - startTime < REFRESH_DURATION_MS) {
+                try {
+                    await axios.post(`${BASE_URL}/Hack/team/${team.password}`);
+                    successfulRefreshes++;
+                } catch (error) {
+                    failedRefreshes++;
+                }
+            }
+            
+            // Step 4: Clean up and resolve the promise
+            clearTimeout(totalTimeout);
+            socket.disconnect();
+            resolve({
+                teamName: team.teamname,
+                successfulRefreshes,
+                failedRefreshes,
             });
         });
 
-        socket.on('login:success', () => {
-          // Now that the session is active, attempt to select the domain
-          socket.emit('domainSelected', {
-            teamId: assignment.teamId,
-            domain: assignment.domainId,
-          });
-        });
-
-        // Step 4: Listen for the final result of the domain selection
-        socket.on('domainSelected', (response) => {
-          clearTimeout(timeout);
-          socket.disconnect();
-          if (response.error) {
-            reject({ ...assignment, reason: `Domain selection failed: ${response.error}` });
-          } else {
-            resolve({ ...assignment, result: `Successfully selected ${response.domain.name}` });
-          }
-        });
-
-        // Handle connection and login errors
+        // --- Error Handling ---
         socket.on('login:error', (data) => {
-          clearTimeout(timeout);
-          socket.disconnect();
-          reject({ ...assignment, reason: `Session error: ${data.message}` });
+            clearTimeout(totalTimeout);
+            socket.disconnect();
+            reject({ teamName: team.teamname, reason: `Session error: ${data.message}` });
         });
 
         socket.on('connect_error', (err) => {
-          clearTimeout(timeout);
-          reject({ ...assignment, reason: `Connection error: ${err.message}` });
+            clearTimeout(totalTimeout);
+            reject({ teamName: team.teamname, reason: `Connection error: ${err.message}` });
         });
-      });
     });
+}
 
-    // Step 5: Execute all tests simultaneously and report results
-    console.log(`\n💥 Simulating ${testPromises.length} teams selecting domains now...\n`);
+
+/**
+ * Main function to run the load test.
+ */
+async function runLoadTest() {
+    console.log('🚀 Starting team login and refresh load test...');
+    let teamsToTest;
+
+    try {
+        console.log('Fetching all verified teams...');
+        const teamsRes = await axios.get(`${BASE_URL}/Hack/students`);
+        
+        // Use only verified teams for the test
+        teamsToTest = teamsRes.data.teams.filter(t => t.verified);
+
+        if (teamsToTest.length === 0) {
+            console.error('❌ No verified teams found. Test cannot proceed.');
+            return;
+        }
+        console.log(`✅ Found ${teamsToTest.length} verified teams to simulate.`);
+    } catch (error) {
+        console.error(`\n❌ An unexpected error occurred during test setup: ${error.message}`);
+        return;
+    }
+
+    const testPromises = teamsToTest.map(team => simulateTeam(team));
+
+    console.log(`\n💥 Simulating ${testPromises.length} teams logging in and refreshing...\n`);
     const results = await Promise.allSettled(testPromises);
 
-    let successCount = 0;
-    let failureCount = 0;
+    let totalSuccesses = 0;
+    let totalFailures = 0;
+    let successfulTeams = 0;
+    let failedTeams = 0;
 
-    console.log('--- Domain Selection Test Results ---');
+    console.log('--- Test Results ---');
     results.forEach(result => {
-      if (result.status === 'fulfilled') {
-        console.log(`✅ SUCCESS: [${result.value.teamName}] - ${result.value.result}`);
-        successCount++;
-      } else {
-        console.error(`❌ FAILED: [${result.reason.teamName}] - ${result.reason.reason}`);
-        failureCount++;
-      }
+        if (result.status === 'fulfilled') {
+            const { teamName, successfulRefreshes, failedRefreshes } = result.value;
+            console.log(`✅ SUCCESS: [${teamName}] - Completed with ${successfulRefreshes} successful refreshes and ${failedRefreshes} failures.`);
+            totalSuccesses += successfulRefreshes;
+            totalFailures += failedRefreshes;
+            successfulTeams++;
+        } else {
+            const { teamName, reason } = result.reason;
+            console.error(`❌ FAILED: [${teamName}] - ${reason}`);
+            failedTeams++;
+        }
     });
 
     console.log('\n--- Summary ---');
-    console.log(`Total Attempts: ${testPromises.length}`);
-    console.log(`✅ Successes: ${successCount}`);
-    console.log(`❌ Failures: ${failureCount}`);
-    console.log('\nTest finished. Please check your admin panel and database to verify the final domain assignments and slot counts.');
-
-  } catch (error) {
-    console.error(`\n❌ An unexpected error occurred during the test setup: ${error.message}`);
-  }
+    console.log(`- Teams Simulated: ${testPromises.length}`);
+    console.log(`- Teams Completed Successfully: ${successfulTeams}`);
+    console.log(`- Teams Failed: ${failedTeams}`);
+    console.log('---');
+    console.log(`- Total Successful API Requests: ${totalSuccesses}`);
+    console.log(`- Total Failed API Requests: ${totalFailures}`);
+    console.log('\nTest finished.');
 }
 
-runDomainSelectionTest();
+runLoadTest();
