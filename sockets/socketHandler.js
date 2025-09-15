@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const hackforge = require("../module/hackforge"); // Adjust paths
+const hackforge = require("../module/hackforge");
 const Domain = require("../module/Domain");
 const Reminder = require("../module/Reminder");
 const PPT = require("../module/PPT");
@@ -13,13 +13,10 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
     io.on("connection", (socket) => {
         console.log(`A user connected: ${socket.id}`);
 
-        // +++ SEND INITIAL COUNT WHEN AN ADMIN CONNECTS +++
+        
         socket.on('admin:getActiveSessions', () => {
             socket.emit('admin:activeSessionsUpdate', { count: activeTeamSessions.size });
         });
-        // =================================================================
-        // == NEW: LOGIC TO PREVENT CONCURRENT LOGINS ======================
-        // =================================================================
 
         // 1. When a client logs in successfully, it should emit this event
         socket.on('team:login', (teamId) => {

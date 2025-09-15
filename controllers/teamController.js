@@ -248,9 +248,9 @@ exports.getGameLeaderboard = async (req, res) => {
             { verified: true }, // Only show verified teams
             'teamname memoryGameScore numberPuzzleScore stopTheBarScore internalGameScore' // Fetch all needed scores
         )
-        .lean(); // Use .lean() for faster, plain JavaScript objects
+        .lean();
 
-        // The backend calculates the total score and includes individual scores
+        
         const leaderboard = teams.map(team => ({
             _id: team._id,
             teamname: team.teamname,
@@ -454,8 +454,8 @@ exports.submitStopTheBarScore = async (req, res) => {
 
 exports.submitNumberPuzzleScore = async (req, res) => {
     try {
-        const settings = await ServerSetting.findOne({ singleton: "main" }); // <-- Add this line
-        // This assumes you'll add a 'numberPuzzleOpenTime' to your settings
+        const settings = await ServerSetting.findOne({ singleton: "main" }); 
+        
         if (!settings.puzzleOpenTime || new Date() < new Date(settings.puzzleOpenTime)) {
             return res.status(403).json({ error: 'The Number Puzzle game is not open yet.' });
         }
@@ -578,9 +578,9 @@ exports.updateDomain = async (req, res) => {
 };
 
 
-// Replace your old resetAllDomains function with this one
+
 exports.resetAllDomains = async (req, res) => {
-    // ⚠️ Security: Add proper admin authentication middleware in a real application.
+   
     const session = await mongoose.startSession();
     session.startTransaction();
 

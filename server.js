@@ -64,7 +64,7 @@ app.post('/api/admin/clear-all-sessions', (req, res) => {
 
         console.log(`[ADMIN ACTION] Cleared ${sessionsCleared} active team sessions.`);
 
-        // Notify all connected clients (especially admins) that the count is now 0
+        // Notify all connected clients about session clearance
         io.emit('admin:activeSessionsUpdate', { count: 0 });
 
         res.status(200).json({
@@ -100,7 +100,7 @@ const checkRegistrationStatus = async () => {
         console.error("Error checking registration status:", error);
     }
 };
-
+//temp domains
 const initializeDomains = async () => {
     try {
         const count = await Domain.countDocuments();
