@@ -107,15 +107,16 @@ const initializeDomains = async () => {
         if (count === 0) {
             console.log("No domains found in DB. Initializing...");
             const initialDomains = [
-                { id: "1", name: "Cybersecurity", slots: 10, description: "Focus on digital security and defense.", set: "Set 1" },
-                { id: "2", name: "AI/ML", slots: 10, description: "Develop intelligent systems and models.", set: "Set 1" },
-                { id: "3", name: "Web Development", slots: 10, description: "Build modern web applications.", set: "Set 2" },
-                { id: "4", name: "Mobile App Dev", slots: 10, description: "Create applications for mobile devices.", set: "Set 2" },
-                { id: "5", name: "IoT", slots: 10, description: "Connect physical devices to the internet.", set: "Set 3" },
-                { id: "6", name: "Blockchain", slots: 10, description: "Work with decentralized technologies.", set: "Set 3" },
-                { id: "7", name: "Cloud Computing", slots: 10, description: "Leverage cloud platforms and services.", set: "Set 1" },
-                { id: "8", name: "Digital Learning Platforms", slots: 10, description: "Innovate in education technology.", set: "Set 3" },
-                { id: "9", name: "Student Engagement", slots: 10, description: "Enhance student interaction and experience.", set: "Set 2" },
+
+                    { id: "1", name: "AI-Powered Code Review Assistant", slots: 10, description: "Develop a tool that uses AI to automatically review code, suggest improvements, and identify potential bugs.", set: "Set 1" },
+                    { id: "2", name: "Real-Time Collaborative Code Editor", slots: 10, description: "Build a web-based code editor that allows multiple users to code in the same file simultaneously.", set: "Set 2" },
+                    { id: "3", name: "Gamified Learning Platform for Programmers", slots: 10, description: "Create an interactive platform where users can learn to code by completing challenges and earning rewards.", set: "Set 3" },
+                    { id: "4", name: "Decentralized Social Media Platform", slots: 10, description: "Design a social media application that operates on a blockchain network, giving users more control over their data.", set: "Set 2" },
+                    { id: "5", name: "IoT-Based Smart Home Automation System", slots: 10, description: "Develop a system to control and monitor home appliances remotely using IoT devices.", set: "Set 3" },
+                    { id: "6", name: "Automated Bug Tracking and Reporting System", slots: 10, description: "Build a system that automatically detects, reports, and prioritizes bugs in a software project.", set: "Set 1" },
+                    { id: "7", name: "Cloud-Based IDE for Remote Development", slots: 10, description: "Create a cloud-based Integrated Development Environment (IDE) that can be accessed from any device.", set: "Set 1" },
+                    { id: "8", name: "Personalized E-commerce Recommendation Engine", slots: 10, description: "Develop a recommendation system that provides personalized product suggestions to e-commerce users.", set: "Set 3" },
+                    { id: "9", name: "Live Code-Sharing and Pair Programming Tool", slots: 10, description: "Create a tool that allows developers to share their code in real-time and collaborate on projects.", set: "Set 2" }
             ];
             await Domain.insertMany(initialDomains);
             console.log("Domains have been successfully initialized in the database.");

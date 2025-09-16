@@ -7,7 +7,7 @@ const serverSettingSchema = new mongoose.Schema({
     registrationLimit: { type: Number, default: 60 },
     registrationOpenTime: { type: Date, default: null },
     isForcedClosed: { type: Boolean, default: false },
-    domainStat: { type: Boolean, default: false }, // Can also be a Date if you prefer
+    domainStat: { type: Date, default: false }, //set type to date if need change to boolean
     latestEventUpdate: { type: String, default: "" },
     gameOpenTime: { type: Date, default: null },
     puzzleOpenTime: { type: Date, default: null },

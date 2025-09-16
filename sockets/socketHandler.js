@@ -129,17 +129,24 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             checkRegistrationStatus();
         });
 
+        socket.on("admin:setDomainTime", async (isoTimestamp) => { //new added...
+        settings.domainStat = isoTimestamp;
+        await settings.save();
+        io.emit("domainStat", settings.domainStat);
+        console.log(`Domain opening time set to: ${settings.domainStat}`);
+    });
+
         socket.on("domainOpen", async () => {
-            settings.domainStat = true;
+            settings.domainStat = new Date(); // if seversetting is change to boolen  = true need to set
             await settings.save();
-            io.emit("domainStat", true);
+            io.emit("domainStat", settings.domainStat); //settings.domainStat -> true
             console.log("Domains opened in DB.");
         });
 
         socket.on("admin:closeDomains", async () => {
-            settings.domainStat = false;
+            settings.domainStat = null;// if seversetting is change to boolen  = false need to set
             await settings.save();
-            io.emit("domainStat", false);
+            io.emit("domainStat", null); // if seversetting is change to boolen  = false need to set
             console.log("Domains closed in DB.");
         });
 
