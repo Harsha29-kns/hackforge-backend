@@ -4,6 +4,20 @@ const Domain = require("../module/Domain");
 const Reminder = require("../module/Reminder");
 const PPT = require("../module/PPT");
 
+const emitAllTeamStatuses = async (io, activeTeamSessions) => {
+    try {
+        const allTeams = await hackforge.find({}, 'teamname').lean();
+        const teamsWithStatus = allTeams.map(team => ({
+            ...team,
+            isLoggedIn: activeTeamSessions.has(team._id.toString())
+        }));
+        io.emit('teamStatusUpdate', teamsWithStatus);
+    } catch (error) {
+        console.error("Error emitting team statuses:", error);
+    }
+};
+
+
 // This function receives the 'io' instance, 'settings' object, and the check function
 function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSessions) {
     const broadcastActiveSessions = () => {
@@ -46,23 +60,40 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                 }
             }
         });
+        socket.on('admin:forceLogout', async (teamId) => { 
+            const socketId = activeTeamSessions.get(teamId);
+            if (socketId && io.sockets.sockets.get(socketId)) {
+                io.sockets.sockets.get(socketId).emit('forceLogout', { message: 'You are logged out due to admin action.' });
+                activeTeamSessions.delete(teamId);
+                io.emit('admin:activeSessionsUpdate', { count: activeTeamSessions.size });
+                emitAllTeamStatuses(io, activeTeamSessions);
+                
+                try {
+                    const team = await hackforge.findById(teamId);
+                    if (team) {
+                        console.log(`[Admin Action] Team "${team.teamname}" has been forcibly logged out.`);
+                    } else {
+                        console.log(`[Admin Action] Team with ID ${teamId} (not found) has been forcibly logged out.`);
+                    }
+                } catch (error) {
+                    console.error("Error fetching team details for logging:", error);
+                    console.log(`[Admin Action] Team with ID ${teamId} has been forcibly logged out.`);
+                }
+            }
+        });
 
         // 2. When a user disconnects (e.g., closes browser), release the lock
-        socket.on('disconnect', () => {
-            console.log(`Socket ${socket.id} disconnected.`);
-            // Check if this disconnected socket was holding a session lock
-            if (socket.teamId) {
-                // Only release the lock if the disconnecting socket is the one that holds it
+        socket.on("disconnect", () => {
+            if (socket.teamId && activeTeamSessions.has(socket.teamId)) {
+                 // Check if the disconnected socket is the one holding the lock
                 if (activeTeamSessions.get(socket.teamId) === socket.id) {
                     activeTeamSessions.delete(socket.teamId);
-                    console.log(`[SUCCESS] Released session for Team ID: ${socket.teamId}. Active sessions: ${activeTeamSessions.size}`);
-                    broadcastActiveSessions(); // Notify all admins about the updated active sessions
-                } else {
-                    console.log(`[WARNING] Socket for Team ID ${socket.teamId} disconnected, but it was not the session holder. No action taken.`);
+                    broadcastActiveSessions();
+                    console.log(`[Socket Disconnect] Team ${socket.teamId} session released.`);
+                    emitAllTeamStatuses(io, activeTeamSessions); // <<<--- Make sure this is here
                 }
-            } else {
-                console.log(`[INFO] A socket disconnected without a teamId.`);
             }
+             console.log(`User disconnected: ${socket.id}`);
         });
 
         socket.emit("gameStatusUpdate", settings.gameOpenTime);
