@@ -3,11 +3,11 @@ const { io } = require('socket.io-client');
 
 // --- CONFIGURATION ---
 // IMPORTANT: Change this to your live server URL when testing in production
-//const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com';
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'https://scorecraft-backend-73gb.onrender.com';
+//const BASE_URL = 'http://localhost:3001';
 
 // Set the duration for how long the teams should remain logged in
-const TEST_DURATION_MS = 4 * 60 * 1000; // 2 minutes
+const TEST_DURATION_MS = 2 * 60 * 1000; // 2 minutes
 
 // This array will store the active sessions (socket and team data) for logout
 let activeSessions = [];

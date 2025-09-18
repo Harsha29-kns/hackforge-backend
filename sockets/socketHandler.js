@@ -44,6 +44,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             // If no, this is a valid login. Grant the session lock.
             activeTeamSessions.set(teamId, socket.id); // Lock the session with the current socket's ID
             broadcastActiveSessions(); // Notify all admins about the updated active sessions
+            emitAllTeamStatuses(io, activeTeamSessions);
             socket.teamId = teamId; // Store teamId on the socket object for easy access on disconnect
 
             console.log(`[Login Lock] Team ${teamId} has logged in with session ${socket.id}`);

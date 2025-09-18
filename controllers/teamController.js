@@ -5,6 +5,7 @@ const qrcode = require('qrcode');
 const { sendEmail } = require('../services/emailService');
 const { paymentVerificationTemplate, qrCodeEmailTemplate } = require('../templates/emailTemplates');
 const ServerSetting = require("../module/ServerSetting");
+const { generateTeamPDF } = require('../services/pdfService');
 
 exports.getTeamCount = async (req, res) => {
     try {
@@ -810,5 +811,131 @@ exports.resolveIssue = async (req, res) => {
         res.status(200).json(team);
     } catch (err) {
         res.status(500).json({ error: "Internal server error" });
+    }
+};
+exports.sendAllCredentials = async (req, res) => {
+    try {
+        const verifiedTeams = await hackforge.find({ verified: true }).populate('lead');
+
+        if (!verifiedTeams.length) {
+            return res.status(404).json({ message: 'No verified teams found to send emails to.' });
+        }
+
+        let successCount = 0;
+        let failureCount = 0;
+        const failures = [];
+
+        // Process emails sequentially to avoid overwhelming the mail server
+        for (const team of verifiedTeams) {
+            try {
+                // Ensure team has a lead with an email address
+                if (!team.email) {
+                    console.warn(`Skipping team "${team.teamname}" - Missing lead email.`);
+                    failureCount++;
+                    failures.push({ team: team.teamname, reason: 'Missing lead email' });
+                    continue; // Skip to the next team
+                }
+
+                const pdfBuffer = await generateTeamPDF(team);
+                const emailHtml = `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                        <h2>Congratulations, ${team.name}!</h2>
+                        <p>Your team, <strong>${team.teamname}</strong>, is officially verified for HackForge 2025!</p>
+                        <p>Attached to this email is your official <strong>Team Identity Card PDF</strong>. It contains vital information for the event, including:</p>
+                        <ul>
+                            <li>Your Team's unique <strong>Access Code</strong> for the dashboard.</li>
+                            <li>Individual <strong>QR codes</strong> for each member for attendance tracking.</li>
+                        </ul>
+                        <p>Please <strong>download the attached PDF</strong> and distribute it to your team members immediately. Keep your Access Code safe and secure.</p>
+                        <p>We're excited to see what you build!</p>
+                        <br>
+                        <p>Best Regards,</p>
+                        <p><strong>The HackForge Team</strong></p>
+                    </div>
+                `;
+
+                await sendEmail(
+                    team.email,
+                    `[IMPORTANT] Your HackForge Team Credentials for "${team.teamname}"`,
+                    emailHtml,
+                    [{
+                        filename: `${team.teamname}_Credentials.pdf`,
+                        content: pdfBuffer,
+                        contentType: 'application/pdf',
+                    }]
+                );
+                successCount++;
+            } catch (emailError) {
+                console.error(`Failed to send email to team "${team.teamname}":`, emailError);
+                failureCount++;
+                failures.push({ team: team.teamname, reason: emailError.message });
+            }
+        }
+
+        res.status(200).json({
+            message: `Email process completed.`,
+            successCount,
+            failureCount,
+            failures
+        });
+
+    } catch (error) {
+        console.error("Error in sendAllCredentials controller:", error);
+        res.status(500).json({ message: 'A server error occurred while preparing to send emails.', error: error.message });
+    }
+};
+
+/**
+ * @description Sends credential PDF to a SINGLE specified team.
+ * Triggered by an admin action.
+ */
+exports.sendSingleCredential = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const team = await hackforge.findById(teamId).populate('lead');
+
+        if (!team) {
+            return res.status(404).json({ message: 'Team not found.' });
+        }
+        if (!team.verified) {
+            return res.status(400).json({ message: 'Cannot send credentials to an unverified team.' });
+        }
+        if (!team.email) {
+             return res.status(400).json({ message: 'This team does not have a lead email address on file.' });
+        }
+
+        const pdfBuffer = await generateTeamPDF(team);
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2>Hey, ${team.name}!</h2>
+                <p>Your team, <strong>${team.teamname}</strong>, get ready for HackForge 2025!</p>
+                <p>Attached to this email is your official <strong>Team Identity Card PDF</strong>. It contains vital information for the event, including:</p>
+                <ul>
+                    <li>Your Team's unique <strong>Access Code</strong> for the dashboard.</li>
+                    <li>Individual <strong>QR codes</strong> for each member for attendance tracking.</li>
+                </ul>
+                <p>Please <strong>download the attached PDF</strong> and distribute it to your team members immediately. Keep your Access Code safe and secure.</p>
+                <p>We're excited to see what you build!</p>
+                <br>
+                <p>Best Regards,</p>
+                <p><strong>The HackForge Team</strong></p>
+            </div>
+        `;
+
+        await sendEmail(
+            team.email,
+            `[IMPORTANT] Your HackForge Team Credentials for "${team.teamname}"`,
+            emailHtml,
+            [{
+                filename: `${team.teamname}_Credentials.pdf`,
+                content: pdfBuffer,
+                contentType: 'application/pdf',
+            }]
+        );
+
+        res.status(200).json({ message: `Credentials successfully sent to ${team.teamname}'s lead.` });
+    } catch (error) {
+        console.error(`Failed to send email to team ID "${req.params.teamId}":`, error);
+        res.status(500).json({ message: 'Error sending email', error: error.message });
     }
 };

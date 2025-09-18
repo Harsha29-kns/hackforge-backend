@@ -46,6 +46,8 @@ module.exports = function(activeTeamSessions) {
     router.get("/issues", teamController.getIssues);
     router.post("/issue/:teamId", teamController.addIssue);
     router.post("/issue/resolve/:teamId/:issueId", teamController.resolveIssue);
+    router.post("/admin/send-all-credentials", teamController.sendAllCredentials);
+    router.post("/admin/send-credential/:teamId", teamController.sendSingleCredential);
 
     return router;
 };
