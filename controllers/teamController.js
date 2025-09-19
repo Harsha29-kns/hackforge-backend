@@ -884,9 +884,9 @@ exports.sendAllCredentials = async (req, res) => {
                 const pdfBuffer = await generateTeamPDF(team);
                 const emailHtml = `
                     <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-                        <h2>Congratulations, ${team.name}!</h2>
-                        <p>Your team, <strong>${team.teamname}</strong>, is officially verified for HackForge 2025!</p>
-                        <p>Attached to this email is your official <strong>Team Identity Card PDF</strong>. It contains vital information for the event, including:</p>
+                        <h2>Hey, ${team.name}!</h2>
+                        <p>Your team, <strong>${team.teamname}</strong>, get ready for HackForge 2025!</p>
+                        <p>Attached to this email is your official <strong>Team Login Credentials PDF</strong>. It contains  information for the event, including:</p>
                         <ul>
                             <li>Your Team's unique <strong>Access Code</strong> for the dashboard.</li>
                             <li>Individual <strong>QR codes</strong> for each member for attendance tracking.</li>
@@ -896,6 +896,7 @@ exports.sendAllCredentials = async (req, res) => {
                         <br>
                         <p>Best Regards,</p>
                         <p><strong>The HackForge Team</strong></p>
+                        <p><strong>Scorecraft Club</p>
                     </div>
                 `;
 
