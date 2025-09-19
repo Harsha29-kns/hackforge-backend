@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
-const hackforge = require('./module/hackforge'); // Ensure this path is correct
+const hackforge = require('./module/hackforge'); 
 const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
 
-// --- IMPORTANT ---
-// Replace with your MongoDB connection string
+
 const dbURI = 'mongodb://localhost:27017/scorecraft-kare'; 
 
 mongoose.connect(dbURI)
