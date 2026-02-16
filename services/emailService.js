@@ -3,8 +3,8 @@ require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
         type: "OAuth2",
         user: process.env.MAIL,
@@ -12,19 +12,32 @@ const transporter = nodemailer.createTransport({
         clientSecret: process.env.GMAIL_CLIENT_SECRET,
         refreshToken: process.env.GMAIL_REFRESH_TOKEN,
     },
+    // Adding timeouts to prevent the process from hanging too long
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+});
+
+// ADD THIS: Verify connection on startup
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("Transporter connection error:", error);
+    } else {
+        console.log("Server is ready to take our messages");
+    }
 });
 
 const sendEmail = async (to, subject, html, attachments = []) => {
     try {
         await transporter.sendMail({
-            from: process.env.MAIL,
+            from: `"Scorecraft" <${process.env.MAIL}>`, // Adding a "Friendly Name"
             to,
             subject,
             html,
             attachments,
         });
     } catch (err) {
-        console.error("Error sending email:", err);
+        // Detailed logging helps catch if the Refresh Token has expired
+        console.error("Error sending email details:", err.message);
         throw new Error("Email delivery failed");
     }
 };
