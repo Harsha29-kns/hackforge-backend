@@ -3,8 +3,8 @@ require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
         type: "OAuth2",
         user: process.env.MAIL,
@@ -13,8 +13,12 @@ const transporter = nodemailer.createTransport({
         refreshToken: process.env.GMAIL_REFRESH_TOKEN,
     },
     // Adding timeouts to prevent the process from hanging too long
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
+    tls: {
+        rejectUnauthorized: false
+    },
     family: 4, // Force IPv4 to avoid IPv6 timeouts on Render
     debug: true, // Show verbose logs
     logger: true, // Log to console
@@ -23,9 +27,9 @@ const transporter = nodemailer.createTransport({
 // ADD THIS: Verify connection on startup
 transporter.verify((error, success) => {
     if (error) {
-        console.error("Transporter connection error (v3):", error);
+        console.error("Transporter connection error (v4):", error);
     } else {
-        console.log("Server is ready to take our messages (v3)");
+        console.log("Server is ready to take our messages (v4)");
     }
 });
 
@@ -40,7 +44,7 @@ const sendEmail = async (to, subject, html, attachments = []) => {
         });
     } catch (err) {
         // Detailed logging helps catch if the Refresh Token has expired
-        console.error("Error sending email details (v3 - IPv4):", err.message);
+        console.error("Error sending email details (v4 - IPv4):", err.message);
         throw new Error("Email delivery failed");
     }
 };
