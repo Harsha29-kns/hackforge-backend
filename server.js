@@ -149,7 +149,7 @@ const initializeDomains = async () => {
                 },
                 {
                     id: "5",
-                    name: "Crowdsourced Travel Planner",
+                    name: "Crowdsourced TravelPlanner",
                     slots: 4,
                     description: `A platform where users can create and share travel itineraries. Other users can vote, save, or customize itineraries. The system should support collaborative trip planning with budget breakdowns, timelines, and location maps.`,
                     set: "Set 1"
