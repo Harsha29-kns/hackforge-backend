@@ -16,14 +16,16 @@ const transporter = nodemailer.createTransport({
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     family: 4, // Force IPv4 to avoid IPv6 timeouts on Render
+    debug: true, // Show verbose logs
+    logger: true, // Log to console
 });
 
 // ADD THIS: Verify connection on startup
 transporter.verify((error, success) => {
     if (error) {
-        console.error("Transporter connection error:", error);
+        console.error("Transporter connection error (v2):", error);
     } else {
-        console.log("Server is ready to take our messages");
+        console.log("Server is ready to take our messages (v2)");
     }
 });
 
@@ -38,7 +40,7 @@ const sendEmail = async (to, subject, html, attachments = []) => {
         });
     } catch (err) {
         // Detailed logging helps catch if the Refresh Token has expired
-        console.error("Error sending email details:", err.message);
+        console.error("Error sending email details (v2 - IPv4):", err.message);
         throw new Error("Email delivery failed");
     }
 };
