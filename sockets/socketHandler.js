@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
-const hackforge = require("../module/hackforge");
+const hacksail = require("../module/hacksail");
 const Domain = require("../module/Domain");
 const Reminder = require("../module/Reminder");
 const PPT = require("../module/PPT");
 
 const emitAllTeamStatuses = async (io, activeTeamSessions) => {
     try {
-        const allTeams = await hackforge.find({}, 'teamname').lean();
+        const allTeams = await hacksail.find({}, 'teamname').lean();
         const teamsWithStatus = allTeams.map(team => ({
             ...team,
             isLoggedIn: activeTeamSessions.has(team._id.toString())
@@ -27,7 +27,9 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
     io.on("connection", (socket) => {
         console.log(`A user connected: ${socket.id}`);
 
-        
+        // Immediately send current registration status to new connection
+        checkRegistrationStatus();
+
         socket.on('admin:getActiveSessions', () => {
             socket.emit('admin:activeSessionsUpdate', { count: activeTeamSessions.size });
         });
@@ -51,7 +53,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             socket.emit('login:success');
         });
 
-            socket.on('team:logout', () => {
+        socket.on('team:logout', () => {
             if (socket.teamId) {
                 // Check if this socket is indeed the one holding the lock
                 if (activeTeamSessions.get(socket.teamId) === socket.id) {
@@ -61,16 +63,16 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                 }
             }
         });
-        socket.on('admin:forceLogout', async (teamId) => { 
+        socket.on('admin:forceLogout', async (teamId) => {
             const socketId = activeTeamSessions.get(teamId);
             if (socketId && io.sockets.sockets.get(socketId)) {
                 io.sockets.sockets.get(socketId).emit('forceLogout', { message: 'You are logged out due to admin action.' });
                 activeTeamSessions.delete(teamId);
                 io.emit('admin:activeSessionsUpdate', { count: activeTeamSessions.size });
                 emitAllTeamStatuses(io, activeTeamSessions);
-                
+
                 try {
-                    const team = await hackforge.findById(teamId);
+                    const team = await hacksail.findById(teamId);
                     if (team) {
                         console.log(`[Admin Action] Team "${team.teamname}" has been forcibly logged out.`);
                     } else {
@@ -86,7 +88,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         // 2. When a user disconnects (e.g., closes browser), release the lock
         socket.on("disconnect", () => {
             if (socket.teamId && activeTeamSessions.has(socket.teamId)) {
-                 // Check if the disconnected socket is the one holding the lock
+                // Check if the disconnected socket is the one holding the lock
                 if (activeTeamSessions.get(socket.teamId) === socket.id) {
                     activeTeamSessions.delete(socket.teamId);
                     broadcastActiveSessions();
@@ -94,7 +96,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                     emitAllTeamStatuses(io, activeTeamSessions); // <<<--- Make sure this is here
                 }
             }
-             console.log(`User disconnected: ${socket.id}`);
+            console.log(`User disconnected: ${socket.id}`);
         });
 
         socket.emit("gameStatusUpdate", settings.gameOpenTime);
@@ -108,10 +110,10 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             io.emit("gameStatusUpdate", settings.gameOpenTime);
         });
         socket.on("admin:setPuzzleOpenTime", async (isoTimestamp) => {
-        settings.puzzleOpenTime = isoTimestamp;
-        await settings.save();
-        console.log(`Puzzle opening time updated in DB: ${settings.puzzleOpenTime}`);
-        io.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
+            settings.puzzleOpenTime = isoTimestamp;
+            await settings.save();
+            console.log(`Puzzle opening time updated in DB: ${settings.puzzleOpenTime}`);
+            io.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
         });
         socket.on("admin:setStopTheBarTime", async (isoTimestamp) => {
             settings.stopTheBarOpenTime = isoTimestamp;
@@ -162,11 +164,11 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         });
 
         socket.on("admin:setDomainTime", async (isoTimestamp) => { //new added...
-        settings.domainStat = isoTimestamp;
-        await settings.save();
-        io.emit("domainStat", settings.domainStat);
-        console.log(`Domain opening time set to: ${settings.domainStat}`);
-    });
+            settings.domainStat = isoTimestamp;
+            await settings.save();
+            io.emit("domainStat", settings.domainStat);
+            console.log(`Domain opening time set to: ${settings.domainStat}`);
+        });
 
         socket.on("domainOpen", async () => {
             settings.domainStat = new Date(); // if seversetting is change to boolen  = true need to set
@@ -206,7 +208,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                 if (!settings.domainStat) {
                     return io.to(socket.id).emit("domainSelected", { error: "Domain selection is currently closed." });
                 }
-                const Team = await hackforge.findById(teamId);
+                const Team = await hacksail.findById(teamId);
                 if (!Team) {
                     return io.to(socket.id).emit("domainSelected", { error: "Team not found." });
                 }
@@ -243,7 +245,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on("admin", async (team) => {
             const { name, lead, teamMembers } = team;
             socket.join(name);
-            const Team = await hackforge.findOne({ teamname: name });
+            const Team = await hacksail.findOne({ teamname: name });
             if (Team) {
                 Team.lead = lead;
                 Team.teamMembers = teamMembers;
@@ -251,13 +253,13 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
                 await Team.save();
             }
         });
-            socket.on("admin:setFirstReviewState", async (isOpen) => {
+        socket.on("admin:setFirstReviewState", async (isOpen) => {
             settings.isFirstReviewOpen = isOpen;
             await settings.save();
             console.log(`First review state changed to: ${isOpen}`);
-            io.emit("reviewStatusUpdate", { 
+            io.emit("reviewStatusUpdate", {
                 isFirstReviewOpen: settings.isFirstReviewOpen,
-                isSecondReviewOpen: settings.isSecondReviewOpen 
+                isSecondReviewOpen: settings.isSecondReviewOpen
             });
         });
 
@@ -268,7 +270,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             io.emit("reviewStatusUpdate", {
                 isFirstReviewOpen: settings.isFirstReviewOpen,
                 isSecondReviewOpen: settings.isSecondReviewOpen
-                
+
             });
         });
 
@@ -295,7 +297,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             console.log(`Broadcasted PPT template: ${data.fileName}`);
         });
     });
-    
+
 }
 
 module.exports = initializeSockets;

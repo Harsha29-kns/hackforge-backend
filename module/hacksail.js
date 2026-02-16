@@ -71,5 +71,5 @@ const eventSchema = new mongoose.Schema({
     }]
 });
 
-const Event = mongoose.model("hackforge", eventSchema);
+const Event = mongoose.model("hacksail", eventSchema);
 module.exports = Event;

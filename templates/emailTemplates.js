@@ -35,7 +35,7 @@ const paymentVerificationTemplate = (studentName, teamName) => `
 `;
 
 const qrCodeEmailTemplate = (studentName, teamName, members) => {
-    const memberHtml = members.map((member, index) => `
+  const memberHtml = members.map((member, index) => `
       <div style="background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; text-align: left; display: flex; align-items: center; gap: 20px;">
         <img src="cid:qrcode${index}" alt="QR Code" style="width: 100px; height: 100px; border-radius: 4px;"/>
         <div>
@@ -47,7 +47,7 @@ const qrCodeEmailTemplate = (studentName, teamName, members) => {
       </div>
     `).join('');
 
-    return `
+  return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -93,9 +93,69 @@ const qrCodeEmailTemplate = (studentName, teamName, members) => {
       </body>
       </html>
     `;
+
+};
+
+const verificationSuccessTemplate = (studentName, teamName, members) => {
+  const memberListHtml = members.map(m =>
+    `<li style="margin-bottom: 5px;"><strong>${m.name}</strong> (${m.regNo}) ${m.isLead ? '(Lead)' : ''}</li>`
+  ).join('');
+
+  return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        </style>
+      </head>
+      <body style="font-family: 'Roboto', Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+          <div style="background: linear-gradient(90deg, #10b981, #059669); color: #ffffff; padding: 30px 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">Payment Verified!</h1>
+          </div>
+          <div style="padding: 30px 25px; color: #333333; line-height: 1.6;">
+            <p style="font-size: 16px;">Hello <strong style="color: #10b981;">${studentName}</strong>,</p>
+            <p style="font-size: 16px;">
+              Great news! The payment for your team, <strong style="color: #10b981;">${teamName}</strong>, has been successfully verified by our team.
+            </p>
+            
+            <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0;">
+              <h3 style="margin: 0 0 10px 0; color: #047857;">Team Details</h3>
+              <ul style="margin: 0; padding-left: 20px;">
+                ${memberListHtml}
+              </ul>
+            </div>
+
+            <p style="font-size: 16px;">
+              <strong>Important:</strong> To receive your official Entry Pass, event schedule, and other critical updates, you MUST join our official WhatsApp group.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://chat.whatsapp.com/Is73YCPbEeN9vbhyGAoFLe" style="text-decoration: none; background-color: #25D366; color: #ffffff; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 10px;">
+                <span>Join Official WhatsApp Group</span>
+              </a>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 20px; font-style: italic;">
+              Note: Your official Team Credentials (PDF Pass) will be emailed to you separately shortly.
+            </p>
+
+            <p style="font-size: 16px; margin-top: 30px;">See you at the event!<br>
+              <strong style="color: #10b981;">The Scorecraft Team</strong>
+            </p>
+          </div>
+          <div style="background-color: #f1f1f1; color: #888888; text-align: center; padding: 15px; font-size: 12px;">
+            <p style="margin: 0;">&copy; 2025 Scorecraft. All Rights Reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 };
 
 module.exports = {
-    paymentVerificationTemplate,
-    qrCodeEmailTemplate,
+  paymentVerificationTemplate,
+  qrCodeEmailTemplate,
+  verificationSuccessTemplate
 };

@@ -30,6 +30,9 @@ module.exports = function(activeTeamSessions) {
     router.get("/review/teams/:judgeId", teamController.getReviewTeamsForJudge); // Teams for review by judge
 
     // --- Update Routes ---
+    router.post("/admin/send-payment-link", teamController.sendPaymentLink); // New Route
+    router.post("/payment/submit-proof", teamController.submitPaymentProof); // New Route for PaymentPortal
+    router.post("/payment/validate-email", teamController.validatePaymentEmail); // New Route for PaymentPortal
 
     router.post("/sector/:id", teamController.updateSector);
     router.post("/updateDomain", teamController.updateDomain);

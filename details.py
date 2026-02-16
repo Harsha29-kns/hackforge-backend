@@ -23,7 +23,6 @@ def create_team_record(team: Dict) -> Dict:
     record = {
         "Team Name": team.get("teamname", ""),
         "Domain": team.get("Domain", ""),
-        "Score": team.get("Score", 0),
         "First Review Score": team.get("FirstReviewScore", 0),
         "Second Review Score": team.get("SecoundReviewScore", 0),
         "Password": team.get("password", ""),
@@ -88,15 +87,14 @@ def generate_excel():
         lead_record = team_record.copy()
         lead_record.update({
             "Name": team.get("name", ""),
-            "Email": team.get("email", ""),
+            
             "Registration Number": team.get("registrationNumber", ""),
             "Role": "Team Lead",
             "Sector": team.get("Sector", ""),
             "Department": team.get("department", ""),
-            "Year": team.get("year", ""),
-            "Section": team.get("section", ""),
-            "Hostel": team.get("type", ""),
-            "Room": team.get("room", ""),
+            
+            
+            
         })
         records.append(lead_record)
 
@@ -109,15 +107,12 @@ def generate_excel():
             member_record = team_record.copy()
             member_record.update({
                 "Name": member.get("name", ""),
-                "Email": member.get("registrationNumber", "") + "@klu.ac.in",
+                
                 "Registration Number": member.get("registrationNumber", ""),
-                "Role": "Team Member",
+                
                 "Sector": team.get("Sector", ""),
                 "Department": member.get("department", ""),
-                "Year": member.get("year", ""),
-                "Section": member.get("section", ""),
-                "Hostel": member.get("type", ''),
-                "Room": member.get("room", "")
+                
             })
             records.append(member_record)
 

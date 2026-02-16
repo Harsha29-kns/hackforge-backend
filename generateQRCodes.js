@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const hackforge = require('./module/hackforge'); 
+const hacksail = require('./module/hacksail'); 
 const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +13,7 @@ mongoose.connect(dbURI)
 
 async function generateQrCodesForVerifiedTeams() {
     try {
-        const verifiedTeams = await hackforge.find({ verified: true });
+        const verifiedTeams = await hacksail.find({ verified: true });
 
         if (verifiedTeams.length === 0) {
             console.log("No verified teams found.");

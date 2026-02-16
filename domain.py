@@ -19,7 +19,7 @@ def assign_domains():
         print("✅ Successfully connected to the database.")
 
         # Get collections
-        teams_collection = db["hackforges"]  # The collection where team data is stored
+        teams_collection = db["hacksails"]  # The collection where team data is stored
         domains_collection = db["domains"]   # The collection for domain definitions
 
         # Fetch all teams that do not have a domain assigned yet

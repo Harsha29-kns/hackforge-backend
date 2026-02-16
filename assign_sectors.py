@@ -26,7 +26,7 @@ def assign_sectors_to_teams():
         print("✅ Successfully connected to the database.")
 
         # Get the collection where team data is stored
-        teams_collection = db["hackforges"]
+        teams_collection = db["hacksails"]
         
         # Define the sectors and the assignment rules
         sectors = ["Naruto", "Sasuke", "Itachi"]
