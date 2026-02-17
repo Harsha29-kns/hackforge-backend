@@ -3,7 +3,7 @@ const router = express.Router();
 const cors = require("cors");
 const teamController = require("../controllers/teamController");
 
-module.exports = function(activeTeamSessions) {
+module.exports = function (activeTeamSessions) {
     // Middleware specific to this router
     router.use(express.json());
     router.use(cors({ origin: "*" }));
@@ -37,8 +37,9 @@ module.exports = function(activeTeamSessions) {
     router.post("/sector/:id", teamController.updateSector);
     router.post("/updateDomain", teamController.updateDomain);
     router.post("/verify/:id", teamController.verifyTeam);
+    router.put("/update-team/:id", teamController.updateTeam);
     router.post("/admin/reset-domains", teamController.resetAllDomains);
-    
+
     // Pass activeTeamSessions to the controller for this specific route
     router.get("/teams/status", (req, res) => teamController.getTeamLoginStatus(req, res, activeTeamSessions));
 

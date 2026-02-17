@@ -26,6 +26,10 @@ def create_team_record(team: Dict) -> Dict:
         "First Review Score": team.get("FirstReviewScore", 0),
         "Second Review Score": team.get("SecoundReviewScore", 0),
         "Password": team.get("password", ""),
+        "Payment Status": team.get("paymentStatus", ""),
+        "Payment Link": team.get("transtationId", ""),
+        "img": team.get("imgUrl", ""),
+
     }
 
     first_total = 0
@@ -92,8 +96,6 @@ def generate_excel():
             "Role": "Team Lead",
             "Sector": team.get("Sector", ""),
             "Department": team.get("department", ""),
-            
-            
             
         })
         records.append(lead_record)

@@ -73,7 +73,7 @@ const qrCodeEmailTemplate = (studentName, teamName, members) => {
               To receive all important updates, announcements, and schedules, please join our official WhatsApp group.
             </p>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://chat.whatsapp.com/Is73YCPbEeN9vbhyGAoFLe" style="text-decoration: none; background: linear-gradient(90deg, #4a00e0, #8e2de2); color: #ffffff; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+              <a href="https://chat.whatsapp.com/C4HBKy7jMqm3VYSScw3AD5" style="text-decoration: none; background: linear-gradient(90deg, #4a00e0, #8e2de2); color: #ffffff; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                 Join Official Group
               </a>
             </div>
@@ -132,7 +132,7 @@ const verificationSuccessTemplate = (studentName, teamName, members) => {
             </p>
 
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://chat.whatsapp.com/Is73YCPbEeN9vbhyGAoFLe" style="text-decoration: none; background-color: #25D366; color: #ffffff; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 10px;">
+              <a href="https://chat.whatsapp.com/C4HBKy7jMqm3VYSScw3AD5" style="text-decoration: none; background-color: #25D366; color: #ffffff; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 10px;">
                 <span>Join Official WhatsApp Group</span>
               </a>
             </div>

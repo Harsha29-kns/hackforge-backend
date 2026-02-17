@@ -36,6 +36,7 @@ const eventSchema = new mongoose.Schema({
     year: String,
     department: String,
     section: String,
+    phoneNumber: String,
     lead: leadSchema,
     teamMembers: [teamMemberSchema],
     upiId: String,
@@ -44,13 +45,13 @@ const eventSchema = new mongoose.Schema({
     verified: { type: Boolean, default: false },
     Domain: String,
     GameScore: Number,
-    
+
     // THIS IS THE FIX
     password: {
         type: String,
         index: true, // <-- ADD THIS LINE to make logins extremely fast
     },
-    
+
     FirstReview: Object,
     SecoundReview: Object,
     memoryGameScore: { type: Number, default: null },

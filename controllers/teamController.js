@@ -735,6 +735,27 @@ exports.updateDomain = async (req, res) => {
     }
 };
 
+exports.updateTeam = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        // Remove immutable fields if any, or just trust admin
+        delete updates._id;
+
+        const updatedTeam = await hacksail.findByIdAndUpdate(id, updates, { new: true });
+
+        if (!updatedTeam) {
+            return res.status(404).json({ error: "Team not found" });
+        }
+
+        res.status(200).json({ message: "Team updated successfully", team: updatedTeam });
+    } catch (error) {
+        console.error("Error updating team:", error);
+        res.status(500).json({ error: "Server error while updating team" });
+    }
+};
+
 
 
 exports.resetAllDomains = async (req, res) => {
