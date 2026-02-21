@@ -524,8 +524,50 @@ exports.verifyTeam = async (req, res) => {
         const team = await hacksail.findById(id);
         if (!team) return res.status(404).json({ error: "Team not found." });
 
-        const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        // Only mark as verified — QR and password are generated separately
         team.verified = true;
+        await team.save();
+
+        if (req.io) {
+            const verifiedTeamCount = await hacksail.countDocuments({ verified: true });
+            req.io.emit("updateTeamCount", verifiedTeamCount);
+        }
+
+        // Send a simple approval confirmation email (no credentials yet)
+        try {
+            const approvalHtml = `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #16a34a;">Payment Approved – HackSail</h2>
+                    <p>Hello <strong>${team.name}</strong>,</p>
+                    <p>Great news! Your payment for team <strong>${team.teamname}</strong> has been verified and approved.</p>
+                    <p>Your QR codes and login credentials will be sent to this email shortly. Please keep an eye on your inbox.</p>
+                    <br/>
+                    <p>Best Regards,<br/>The HackSail Team</p>
+                </div>
+            `;
+            await sendEmail(team.email, `Payment Approved – HackSail`, approvalHtml);
+        } catch (emailErr) {
+            console.error("Failed to send approval email:", emailErr);
+        }
+
+        res.status(200).json({ message: "Team verified successfully. Credentials not yet generated." });
+
+    } catch (err) {
+        console.error("--- VERIFICATION FAILED ---");
+        console.error("Team ID:", req.params.id);
+        console.error("Error Details:", err);
+        res.status(500).json({ error: "Internal server error during verification.", details: err.message });
+    }
+};
+
+exports.generateQRAndPass = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const team = await hacksail.findById(id);
+        if (!team) return res.status(404).json({ error: "Team not found." });
+        if (!team.verified) return res.status(400).json({ error: "Team must be verified before generating credentials." });
+
+        const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
         team.password = generatedPassword;
 
         const emailMemberList = [];
@@ -544,34 +586,45 @@ exports.verifyTeam = async (req, res) => {
 
         await team.save();
 
-        if (req.io) {
-            const verifiedTeamCount = await hacksail.countDocuments({ verified: true });
-            req.io.emit("updateTeamCount", verifiedTeamCount);
-        }
-
         try {
             const emailContent = verificationSuccessTemplate(team.name, team.teamname, emailMemberList);
-            await sendEmail(team.email, `Payment Verified - HackSail`, emailContent);
+            await sendEmail(team.email, `Your HackSail Credentials & QR Codes`, emailContent);
         } catch (emailErr) {
-            console.error("Failed to send verification email:", emailErr);
+            console.error("Failed to send credentials email:", emailErr);
         }
 
-        res.status(200).json({
-            message: "Team verified and email sent successfully",
-            password: generatedPassword
-        });
+        res.status(200).json({ message: "QR codes and password generated and emailed successfully.", password: generatedPassword });
 
     } catch (err) {
-        console.error("--- VERIFICATION FAILED ---");
+        console.error("--- QR/PASS GENERATION FAILED ---");
         console.error("Team ID:", req.params.id);
         console.error("Error Details:", err);
-
-        res.status(500).json({
-            error: "Internal server error during verification.",
-            details: err.message
-        });
+        res.status(500).json({ error: "Internal server error during QR/pass generation.", details: err.message });
     }
 };
+
+exports.getTeamByEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: "Email is required." });
+        const team = await hacksail.findOne({ email: email.toLowerCase().trim() });
+        if (!team) return res.status(404).json({ error: "No team found for this email. Please check and try again." });
+        res.status(200).json({ team });
+    } catch (err) {
+        console.error("Error fetching team by email:", err);
+        res.status(500).json({ error: "Internal server error." });
+    }
+};
+
+exports.getEditDetailsStatus = async (req, res) => {
+    try {
+        const settings = await ServerSetting.findOne({ singleton: "main" });
+        res.status(200).json({ isEditDetailsOpen: settings?.isEditDetailsOpen ?? false });
+    } catch (err) {
+        res.status(500).json({ error: "Could not fetch setting." });
+    }
+};
+
 
 exports.submitStopTheBarScore = async (req, res) => {
     try {

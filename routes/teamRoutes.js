@@ -37,6 +37,9 @@ module.exports = function (activeTeamSessions) {
     router.post("/sector/:id", teamController.updateSector);
     router.post("/updateDomain", teamController.updateDomain);
     router.post("/verify/:id", teamController.verifyTeam);
+    router.post("/generate-qr-pass/:id", teamController.generateQRAndPass);
+    router.post("/team-by-email", teamController.getTeamByEmail);
+    router.get("/settings/edit-details-status", teamController.getEditDetailsStatus);
     router.put("/update-team/:id", teamController.updateTeam);
     router.post("/admin/reset-domains", teamController.resetAllDomains);
 

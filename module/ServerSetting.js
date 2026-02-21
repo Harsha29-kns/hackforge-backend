@@ -14,6 +14,7 @@ const serverSettingSchema = new mongoose.Schema({
     stopTheBarOpenTime: { type: Date, default: null },
     isFirstReviewOpen: { type: Boolean, default: false }, // New field for first review
     isSecondReviewOpen: { type: Boolean, default: false }, // New field for second review
+    isEditDetailsOpen: { type: Boolean, default: false }, // Gate for student edit-details page
 
 });
 

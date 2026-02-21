@@ -283,6 +283,18 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             });
         });
 
+        // Edit Details open/close control
+        socket.on("admin:setEditDetailsState", async (isOpen) => {
+            settings.isEditDetailsOpen = isOpen;
+            await settings.save();
+            console.log(`Edit Details state changed to: ${isOpen}`);
+            io.emit("editDetailsStatusUpdate", { isEditDetailsOpen: settings.isEditDetailsOpen });
+        });
+
+        socket.on("getEditDetailsStatus", () => {
+            socket.emit("editDetailsStatusUpdate", { isEditDetailsOpen: settings.isEditDetailsOpen ?? false });
+        });
+
         socket.on("admin:sendReminder", async (data) => {
             const newReminder = new Reminder({ message: data.message });
             await newReminder.save();
