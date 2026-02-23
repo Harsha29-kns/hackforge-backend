@@ -540,9 +540,17 @@ exports.verifyTeam = async (req, res) => {
                     <h2 style="color: #16a34a;">Payment Approved – HackSail</h2>
                     <p>Hello <strong>${team.name}</strong>,</p>
                     <p>Great news! Your payment for team <strong>${team.teamname}</strong> has been verified and approved.</p>
-                    <p>Your QR codes and login credentials will be sent to this email shortly. Please keep an eye on your inbox.</p>
                     <br/>
-                    <p>Best Regards,<br/>The HackSail Team</p>
+                    <p style="font-size: 16px;">
+              <strong>Important:</strong> To receive your official Entry Pass, event schedule, and other critical updates, you MUST join our official WhatsApp group.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://chat.whatsapp.com/C4HBKy7jMqm3VYSScw3AD5" style="text-decoration: none; background-color: #25D366; color: #ffffff; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 10px;">
+                <span>Join Official WhatsApp Group</span>
+              </a>
+            </div>
+                    <p>Best Regards,<br/>The Scorecraft Team</p>
                 </div>
             `;
             await sendEmail(team.email, `Payment Approved – HackSail`, approvalHtml);
