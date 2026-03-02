@@ -124,7 +124,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on("getGameStatus", () => {
             socket.emit("gameStatusUpdate", settings.gameOpenTime);
             socket.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
-            socket.emit("stopTheBarStatusUpdate", settings.stopTheBarOpenTime); // Send the current Stop the Bar time
+            socket.emit("stopTheBarStatusUpdate", settings.stopTheBarOpenTime);
         });
 
 

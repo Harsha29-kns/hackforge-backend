@@ -594,14 +594,7 @@ exports.generateQRAndPass = async (req, res) => {
 
         await team.save();
 
-        try {
-            const emailContent = verificationSuccessTemplate(team.name, team.teamname, emailMemberList);
-            await sendEmail(team.email, `Your HackSail Credentials & QR Codes`, emailContent);
-        } catch (emailErr) {
-            console.error("Failed to send credentials email:", emailErr);
-        }
-
-        res.status(200).json({ message: "QR codes and password generated and emailed successfully.", password: generatedPassword });
+        res.status(200).json({ message: "QR codes and password generated successfully.", password: generatedPassword });
 
     } catch (err) {
         console.error("--- QR/PASS GENERATION FAILED ---");
@@ -1030,7 +1023,10 @@ exports.resolveIssue = async (req, res) => {
 };
 exports.sendAllCredentials = async (req, res) => {
     try {
-        const verifiedTeams = await hacksail.find({ verified: true }).populate('lead');
+        const verifiedTeams = await hacksail.find({
+            verified: true,
+            password: { $exists: true, $ne: null }
+        }).populate('lead');
 
         if (!verifiedTeams.length) {
             return res.status(404).json({ message: 'No verified teams found to send emails to.' });

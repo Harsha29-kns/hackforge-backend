@@ -18,34 +18,34 @@ async function generateTeamPDF(team) {
 
             // --- Page Background ---
             doc.rect(0, 0, doc.page.width, doc.page.height).fill(pageBackgroundColor);
-            
-            
+
+
 
 
             // --- Header ---
             const headerY = 40;
-            doc.image(path.join(__dirname, '../public/hackforge.png'), 50, headerY, { width: 120 });
+            doc.image(path.join(__dirname, '../public/Hacksailr.png'), 50, headerY, { width: 120 });
             doc.image(path.join(__dirname, '../public/scorecraft.jpg'), doc.page.width - 120, headerY, { width: 70 });
             doc.fontSize(24).font('Helvetica-Bold').fillColor(textColor).text('Team Credentials', 0, headerY + 20, { align: 'center' });
-            doc.fontSize(12).font('Helvetica').fillColor(lightTextColor).text('HackForge 2025 Event', 0, headerY + 50, { align: 'center' });
+            doc.fontSize(12).font('Helvetica').fillColor(lightTextColor).text('HackSail 2026 Event', 0, headerY + 50, { align: 'center' });
 
 
             // --- Team Info Section ---
             const teamInfoY = headerY + 100;
             doc.roundedRect(50, teamInfoY, doc.page.width - 100, 80, 8).fill(cardBackgroundColor);
             doc.fontSize(14).font('Helvetica-Bold').fillColor(textColor).text(team.teamname, 70, teamInfoY + 15);
-            
+
             doc.fontSize(10).font('Helvetica').fillColor(lightTextColor)
-               .text('Sector:', 70, teamInfoY + 40, { continued: true })
-               .font('Helvetica-Bold').fillColor(textColor).text(` ${team.Sector}`);
+                .text('Sector:', 70, teamInfoY + 40, { continued: true })
+                .font('Helvetica-Bold').fillColor(textColor).text(` ${team.Sector}`);
 
             doc.fontSize(10).font('Helvetica').fillColor(lightTextColor)
                 .text('Access Code:', 250, teamInfoY + 40, { continued: true })
                 .font('Helvetica-Bold').fillColor(textColor).text(` ${team.password}`);
-            
+
             const dividerY = teamInfoY + 80 + 15;
             doc.strokeColor(primaryColor).lineWidth(2).moveTo(50, dividerY).lineTo(doc.page.width - 50, dividerY).stroke();
-            
+
 
             // --- Members Section ---
             const allMembers = [
@@ -65,7 +65,7 @@ async function generateTeamPDF(team) {
                     // Redraw background and header on new page
                     doc.rect(0, 0, doc.page.width, doc.page.height).fill(pageBackgroundColor);
                     doc.image(path.join(__dirname, '../public/scorecraft.jpg'), doc.page.width / 2 - 150, doc.page.height / 2 - 150, { width: 300, opacity: 0.05 });
-                    doc.image(path.join(__dirname, '../public/hackforge.png'), 50, headerY, { width: 120 });
+                    doc.image(path.join(__dirname, '../public/Hacksailr.png'), 50, headerY, { width: 120 });
                     doc.image(path.join(__dirname, '../public/scorecraft.jpg'), doc.page.width - 120, headerY, { width: 70 });
                     currentY = 50;
                 }

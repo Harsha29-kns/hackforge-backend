@@ -96,6 +96,10 @@ def generate_excel():
             "Role": "Team Lead",
             "Sector": team.get("Sector", ""),
             "Department": team.get("department", ""),
+            "Hostel": team.get("type", ""),
+            "Room Number": team.get("room", ""),
+            "Mobile Number": team.get("phoneNumber", ""),
+            "Year": team.get("year", ""),
             
         })
         records.append(lead_record)
@@ -111,9 +115,12 @@ def generate_excel():
                 "Name": member.get("name", ""),
                 
                 "Registration Number": member.get("registrationNumber", ""),
-                
+                "Role": "Team Member",
                 "Sector": team.get("Sector", ""),
                 "Department": member.get("department", ""),
+                "Hostel": member.get("type", ""),
+                "Room Number": member.get("room", ""),
+                "Year": member.get("year", ""),
                 
             })
             records.append(member_record)
