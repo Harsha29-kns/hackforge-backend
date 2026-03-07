@@ -27,8 +27,29 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
     io.on("connection", (socket) => {
         console.log(`A user connected: ${socket.id}`);
 
-        // Immediately send current registration status to new connection
-        checkRegistrationStatus();
+        // Immediately send current registration status ONLY to the new connection (not all clients)
+        // We do a targeted emit so existing clients don't get a redundant/flickering update
+        (async () => {
+            try {
+                const mongoose = require('mongoose');
+                const hacksail = require('../module/hacksail');
+                const ServerSetting = require('../module/ServerSetting');
+                const count = await hacksail.countDocuments({});
+                const s = settings;
+                if (!s) return;
+                const isBeforeOpenTime = s.registrationOpenTime && new Date() < new Date(s.registrationOpenTime);
+                const isFull = count >= s.registrationLimit;
+                const isClosed = !!(isFull || s.isForcedClosed || isBeforeOpenTime);
+                socket.emit('registrationStatus', {
+                    isClosed,
+                    count,
+                    limit: s.registrationLimit,
+                    openTime: s.registrationOpenTime,
+                });
+            } catch (e) {
+                console.error('Error sending initial registration status to new socket:', e);
+            }
+        })();
 
         socket.on('admin:getActiveSessions', () => {
             socket.emit('admin:activeSessionsUpdate', { count: activeTeamSessions.size });
@@ -38,6 +59,11 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on('team:login', (teamId) => {
             // Check if this team already has an active session
             if (activeTeamSessions.has(teamId)) {
+                // If it's the exact same socket re-authenticating (e.g., page navigation), allow it
+                if (activeTeamSessions.get(teamId) === socket.id) {
+                    socket.emit('login:success');
+                    return;
+                }
                 // If yes, reject this new login attempt
                 socket.emit('login:error', { message: 'This team is already logged in another device or contact sector incharge.' });
                 return;
@@ -102,7 +128,8 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.emit("gameStatusUpdate", settings.gameOpenTime);
 
         socket.on("check", checkRegistrationStatus);
-        io.emit("domainStat", settings.domainStat);
+        // Send domainStat only to this new socket, not to all connected clients
+        socket.emit("domainStat", settings.domainStat);
         socket.on("admin:setGameOpenTime", async (isoTimestamp) => {
             settings.gameOpenTime = isoTimestamp;
             await settings.save();
@@ -196,7 +223,8 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         });
 
         socket.on("domainStat", () => {
-            io.emit("domainStat", settings.domainStat);
+            // Respond only to the requesting socket — don't rebroadcast to everyone
+            socket.emit("domainStat", settings.domainStat);
         });
 
         socket.on("domainSelected", async (team) => {
@@ -239,7 +267,8 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on("client:getDomains", async () => {
             const domains = await Domain.find({});
             const mapped = domains.map((d) => ({ ...d.toObject(), isFull: d.slots <= 0 }));
-            io.emit("domaindata", mapped);
+            // Send only to the requesting socket — no need to rebroadcast to all teams
+            socket.emit("domaindata", mapped);
         });
 
         socket.on("admin", async (team) => {
