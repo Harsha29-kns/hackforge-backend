@@ -331,6 +331,17 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             console.log(`Broadcasted reminder: ${data.message}`);
         });
 
+        socket.on("admin:sendTargetedMessage", (data) => {
+            const { teamId, message } = data;
+            const targetSocketId = activeTeamSessions.get(teamId);
+            if (targetSocketId) {
+                io.to(targetSocketId).emit("admin:targetedMessage", { message });
+                console.log(`Sent targeted message to team ${teamId}: ${message}`);
+            } else {
+                console.log(`Targeted message failed. Team ${teamId} is not connected.`);
+            }
+        });
+
         socket.on("admin:sendPPT", async (data) => {
             const newPPT = new PPT({ fileName: data.fileName, fileUrl: data.fileUrl });
             await newPPT.save();
