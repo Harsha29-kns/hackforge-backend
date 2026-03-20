@@ -22,13 +22,7 @@ def get_data() -> Any:
 def create_team_record(team: Dict) -> Dict:
     record = {
         "Team Name": team.get("teamname", ""),
-        "Domain": team.get("Domain", ""),
-        "First Review Score": team.get("FirstReviewScore", 0),
-        "Second Review Score": team.get("SecoundReviewScore", 0),
-        "Password": team.get("password", ""),
-        "Payment Status": team.get("paymentStatus", ""),
-        "Payment Link": team.get("transtationId", ""),
-        "img": team.get("imgUrl", ""),
+        
 
     }
 
@@ -97,9 +91,9 @@ def generate_excel():
             "Sector": team.get("Sector", ""),
             "Department": team.get("department", ""),
             "Hostel": team.get("type", ""),
-            "Room Number": team.get("room", ""),
+            
             "Mobile Number": team.get("phoneNumber", ""),
-            "Year": team.get("year", ""),
+            
             
         })
         records.append(lead_record)
@@ -118,9 +112,9 @@ def generate_excel():
                 "Role": "Team Member",
                 "Sector": team.get("Sector", ""),
                 "Department": member.get("department", ""),
-                "Hostel": member.get("type", ""),
+                
                 "Room Number": member.get("room", ""),
-                "Year": member.get("year", ""),
+                
                 
             })
             records.append(member_record)
