@@ -298,7 +298,8 @@ exports.submitGameScore = async (req, res) => {
         team.memoryGamePlayed = true;
         await team.save();
         if (req.io) {
-            req.io.emit('scores:updated'); // Notify all clients that scores have been updated
+            req.io.emit('team', team); // Notify all clients that THIS team's data has been updated
+            //req.io.emit('scores:updated');  // Notify all clients that scores have been updated
         }
         res.status(200).json({ success: true, message: 'Score saved successfully.', team });
     } catch (error) {
@@ -655,7 +656,7 @@ exports.submitStopTheBarScore = async (req, res) => {
         team.stopTheBarPlayed = true;
         await team.save();
         if (req.io) {
-            req.io.emit('scores:updated');
+            req.io.emit('team', team); // Notify all clients that THIS team's data has been updated
         }
 
         res.status(200).json({ success: true, message: 'Score saved successfully.', team });
@@ -689,7 +690,7 @@ exports.submitNumberPuzzleScore = async (req, res) => {
         team.numberPuzzlePlayed = true;
         await team.save();
         if (req.io) {
-            req.io.emit('scores:updated');
+            req.io.emit('team', team); // Notify all clients that THIS team's data has been updated
         }
         res.status(200).json({ success: true, message: 'Score saved successfully.', team });
     } catch (error) {
@@ -734,6 +735,9 @@ exports.submitAttendance = async (req, res) => {
             }
         }
         await team.save();
+        if (req.io) {
+            req.io.emit('team', team);
+        }
         res.status(200).json({ message: `Attendance for Round ${roundNumber} for team ${team.teamname} submitted successfully.` });
     } catch (err) {
         console.error("Error submitting attendance:", err);
@@ -805,6 +809,13 @@ exports.updateDomain = async (req, res) => {
             { Domain: domainNameToSave },
             { new: true }
         );
+
+        // Broadcast updated domain slots to all connected clients in real-time
+        if (req.io) {
+            const allDomains = await Domain.find({});
+            const mapped = allDomains.map((d) => ({ ...d.toObject(), isFull: d.slots <= 0 }));
+            req.io.emit("domaindata", mapped);
+        }
 
         res.status(200).json({ message: "Domain updated successfully", team: updatedTeam });
     } catch (error) {
