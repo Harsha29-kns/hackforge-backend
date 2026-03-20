@@ -132,21 +132,21 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.emit("domainStat", settings.domainStat);
         socket.on("admin:setGameOpenTime", async (isoTimestamp) => {
             settings.gameOpenTime = isoTimestamp;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[setGameOpenTime] Save error:", e.message); }
             console.log(`Game opening time updated in DB: ${settings.gameOpenTime}`);
             io.emit("gameStatusUpdate", settings.gameOpenTime);
         });
         socket.on("admin:setPuzzleOpenTime", async (isoTimestamp) => {
             settings.puzzleOpenTime = isoTimestamp;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[setPuzzleOpenTime] Save error:", e.message); }
             console.log(`Puzzle opening time updated in DB: ${settings.puzzleOpenTime}`);
             io.emit("puzzleStatusUpdate", settings.puzzleOpenTime);
         });
         socket.on("admin:setStopTheBarTime", async (isoTimestamp) => {
             settings.stopTheBarOpenTime = isoTimestamp;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[setStopTheBarTime] Save error:", e.message); }
             console.log(`Stop the Bar opening time updated in DB: ${settings.stopTheBarOpenTime}`);
-            io.emit("stopTheBarStatusUpdate", settings.stopTheBarOpenTime); // Broadcast the new time
+            io.emit("stopTheBarStatusUpdate", settings.stopTheBarOpenTime);
         });
         socket.on("getGameStatus", () => {
             socket.emit("gameStatusUpdate", settings.gameOpenTime);
@@ -160,7 +160,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
             const newLimit = parseInt(limit, 10);
             if (!isNaN(newLimit) && newLimit >= 0) {
                 settings.registrationLimit = newLimit;
-                await settings.save();
+                try { await settings.save(); } catch (e) { console.error("[setRegLimit] Save error:", e.message); }
                 console.log(`Registration limit updated in DB: ${settings.registrationLimit}`);
                 checkRegistrationStatus();
             }
@@ -169,7 +169,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on("admin:setRegOpenTime", async (isoTimestamp) => {
             settings.registrationOpenTime = isoTimestamp;
             settings.isForcedClosed = false;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[setRegOpenTime] Save error:", e.message); }
             console.log(`Registration opening time updated in DB: ${settings.registrationOpenTime}`);
             checkRegistrationStatus();
         });
@@ -177,7 +177,7 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on("admin:forceCloseReg", async () => {
             settings.registrationOpenTime = null;
             settings.isForcedClosed = true;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[forceCloseReg] Save error:", e.message); }
             console.log("Registrations manually closed in DB.");
             checkRegistrationStatus();
         });
@@ -185,29 +185,29 @@ function initializeSockets(io, settings, checkRegistrationStatus, activeTeamSess
         socket.on("admin:forceOpenReg", async () => {
             settings.registrationOpenTime = null;
             settings.isForcedClosed = false;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[forceOpenReg] Save error:", e.message); }
             console.log("Registrations manually opened in DB.");
             checkRegistrationStatus();
         });
 
-        socket.on("admin:setDomainTime", async (isoTimestamp) => { //new added...
+        socket.on("admin:setDomainTime", async (isoTimestamp) => {
             settings.domainStat = isoTimestamp;
-            await settings.save();
+            try { await settings.save(); } catch (e) { console.error("[setDomainTime] Save error:", e.message); }
             io.emit("domainStat", settings.domainStat);
             console.log(`Domain opening time set to: ${settings.domainStat}`);
         });
 
         socket.on("domainOpen", async () => {
-            settings.domainStat = new Date(); // if seversetting is change to boolen  = true need to set
-            await settings.save();
-            io.emit("domainStat", settings.domainStat); //settings.domainStat -> true
+            settings.domainStat = new Date();
+            try { await settings.save(); } catch (e) { console.error("[domainOpen] Save error:", e.message); }
+            io.emit("domainStat", settings.domainStat);
             console.log("Domains opened in DB.");
         });
 
         socket.on("admin:closeDomains", async () => {
-            settings.domainStat = null;// if seversetting is change to boolen  = false need to set
-            await settings.save();
-            io.emit("domainStat", null); // if seversetting is change to boolen  = false need to set
+            settings.domainStat = null;
+            try { await settings.save(); } catch (e) { console.error("[closeDomains] Save error:", e.message); }
+            io.emit("domainStat", null);
             console.log("Domains closed in DB.");
         });
 
